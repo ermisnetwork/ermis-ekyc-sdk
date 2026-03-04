@@ -1,17 +1,40 @@
 import { useState } from "react";
-import { EkycService, EkycError, type OcrResponse } from "ermis-ekyc-sdk";
+import { EkycService, EkycError, DocumentType, type OcrResponse } from "ermis-ekyc-sdk";
 import { FileUpload } from "./FileUpload";
 import { ResultPanel } from "./ResultPanel";
 
-export function OcrTest() {
+const DOC_TYPE_LABELS: Record<DocumentType, string> = {
+  [DocumentType.CCCD]: "CCCD – Citizen Identity Card",
+  [DocumentType.PASSPORT]: "Passport",
+  [DocumentType.GPLX]: "GPLX – Driver's License",
+};
+
+interface OcrTestProps {
+  onDocumentFileChange?: (file: File | null) => void;
+}
+
+export function OcrTest({ onDocumentFileChange }: OcrTestProps) {
   const [frontFile, setFrontFile] = useState<File | null>(null);
   const [backFile, setBackFile] = useState<File | null>(null);
+  const [docType, setDocType] = useState<DocumentType>(DocumentType.CCCD);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<OcrResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const handleFrontFileChange = (file: File | null) => {
+    setFrontFile(file);
+    onDocumentFileChange?.(file);
+  };
+
+  const needsBackSide = docType !== DocumentType.PASSPORT;
+
+  const handleDocTypeChange = (type: DocumentType) => {
+    setDocType(type);
+    if (type === DocumentType.PASSPORT) setBackFile(null);
+  };
+
   const handleSubmit = async () => {
-    if (!frontFile || !backFile) return;
+    if (!frontFile || (needsBackSide && !backFile)) return;
     setLoading(true);
     setError(null);
     setResult(null);
@@ -20,8 +43,8 @@ export function OcrTest() {
       const ekyc = EkycService.getInstance();
       const res = await ekyc.performOcr({
         documentFront: frontFile,
-        documentBack: backFile,
-        documentType: "CCCD",
+        ...(backFile ? { documentBack: backFile } : {}),
+        documentType: docType,
         extractFace: true,
         ocrApi: "advanced",
       });
@@ -37,17 +60,31 @@ export function OcrTest() {
     <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl p-7 shadow-lg">
       <h2 className="text-xl font-semibold mb-1">📄 OCR – Document Extraction</h2>
       <p className="text-sm text-slate-400 mb-6">
-        Upload front and back images of your CMND/CCCD to extract information.
+        Upload front and back images of your document to extract information.
       </p>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
-        <FileUpload label="Document Front" onChange={setFrontFile} />
-        <FileUpload label="Document Back" onChange={setBackFile} />
+      {/* Document Type Selector */}
+      <div className="mb-5">
+        <label className="block text-sm font-medium text-slate-300 mb-2">Document Type</label>
+        <select
+          value={docType}
+          onChange={(e) => handleDocTypeChange(e.target.value as DocumentType)}
+          className="w-full sm:w-64 px-4 py-2.5 bg-[var(--color-bg-input)] border border-[var(--color-border)] rounded-lg text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all appearance-none cursor-pointer"
+        >
+          {Object.entries(DOC_TYPE_LABELS).map(([value, label]) => (
+            <option key={value} value={value}>{label}</option>
+          ))}
+        </select>
+      </div>
+
+      <div className={`grid grid-cols-1 ${needsBackSide ? 'sm:grid-cols-2' : ''} gap-4 mb-5`}>
+        <FileUpload label="Document Front" onChange={handleFrontFileChange} />
+        {needsBackSide && <FileUpload label="Document Back" onChange={setBackFile} />}
       </div>
 
       <button
         className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-br from-indigo-500 to-purple-500 text-white font-semibold rounded-lg shadow-[0_2px_12px_var(--color-accent-glow)] hover:translate-y-[-1px] hover:shadow-[0_4px_20px_var(--color-accent-glow)] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
-        disabled={!frontFile || !backFile || loading}
+        disabled={!frontFile || (needsBackSide && !backFile) || loading}
         onClick={handleSubmit}
       >
         {loading && <span className="spinner" />}

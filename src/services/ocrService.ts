@@ -25,7 +25,9 @@ export class OcrService {
     try {
       const formData = new FormData();
       formData.append("document_front", ensureBlob(request.documentFront));
-      formData.append("document_back", ensureBlob(request.documentBack));
+      if (request.documentBack) {
+        formData.append("document_back", ensureBlob(request.documentBack));
+      }
       formData.append("document_type", request.documentType ?? "CCCD");
       formData.append("extract_face", String(request.extractFace ?? true));
       formData.append("ocr_api", request.ocrApi ?? "advanced");

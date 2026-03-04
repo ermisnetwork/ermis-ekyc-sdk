@@ -6,6 +6,7 @@
 export { EkycService } from "./EkycService";
 
 // Types & Interfaces
+export { DocumentType } from "./types";
 export type {
   EkycConfig,
   OcrRequest,

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { EkycService, EkycError, type EkycFlowResult } from "ermis-ekyc-sdk";
+import { EkycService, EkycError, DocumentType, type EkycFlowResult } from "ermis-ekyc-sdk";
 import { FileUpload } from "./FileUpload";
 import { ResultPanel } from "./ResultPanel";
 
@@ -14,17 +14,31 @@ const stepStyles: Record<StepStatus, string> = {
   failed: "border-red-500 text-red-400 bg-red-500/10",
 };
 
+const DOC_TYPE_LABELS: Record<DocumentType, string> = {
+  [DocumentType.CCCD]: "CCCD – Citizen Identity Card",
+  [DocumentType.PASSPORT]: "Passport",
+  [DocumentType.GPLX]: "GPLX – Driver's License",
+};
+
 export function FullFlowTest() {
   const [frontFile, setFrontFile] = useState<File | null>(null);
   const [backFile, setBackFile] = useState<File | null>(null);
   const [selfieFile, setSelfieFile] = useState<File | null>(null);
+  const [docType, setDocType] = useState<DocumentType>(DocumentType.CCCD);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<EkycFlowResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [steps, setSteps] = useState<[StepStatus, StepStatus, StepStatus]>(["idle", "idle", "idle"]);
 
+  const needsBackSide = docType !== DocumentType.PASSPORT;
+
+  const handleDocTypeChange = (type: DocumentType) => {
+    setDocType(type);
+    if (type === DocumentType.PASSPORT) setBackFile(null);
+  };
+
   const handleSubmit = async () => {
-    if (!frontFile || !backFile || !selfieFile) return;
+    if (!frontFile || (needsBackSide && !backFile) || !selfieFile) return;
     setLoading(true);
     setError(null);
     setResult(null);
@@ -35,8 +49,8 @@ export function FullFlowTest() {
 
       const ocrResult = await ekyc.performOcr({
         documentFront: frontFile,
-        documentBack: backFile,
-        documentType: "CCCD",
+        ...(backFile ? { documentBack: backFile } : {}),
+        documentType: docType,
         extractFace: true,
       });
       setSteps(["done", "active", "idle"]);
@@ -107,16 +121,30 @@ export function FullFlowTest() {
         ))}
       </div>
 
+      {/* Document Type Selector */}
+      <div className="mb-5">
+        <label className="block text-sm font-medium text-slate-300 mb-2">Document Type</label>
+        <select
+          value={docType}
+          onChange={(e) => handleDocTypeChange(e.target.value as DocumentType)}
+          className="w-full sm:w-64 px-4 py-2.5 bg-[var(--color-bg-input)] border border-[var(--color-border)] rounded-lg text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all appearance-none cursor-pointer"
+        >
+          {Object.entries(DOC_TYPE_LABELS).map(([value, label]) => (
+            <option key={value} value={value}>{label}</option>
+          ))}
+        </select>
+      </div>
+
       {/* File Uploads */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
+      <div className={`grid grid-cols-1 ${needsBackSide ? 'sm:grid-cols-3' : 'sm:grid-cols-2'} gap-4 mb-5`}>
         <FileUpload label="Document Front" onChange={setFrontFile} />
-        <FileUpload label="Document Back" onChange={setBackFile} />
+        {needsBackSide && <FileUpload label="Document Back" onChange={setBackFile} />}
         <FileUpload label="Selfie" onChange={setSelfieFile} />
       </div>
 
       <button
         className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-br from-indigo-500 to-purple-500 text-white font-semibold rounded-lg shadow-[0_2px_12px_var(--color-accent-glow)] hover:translate-y-[-1px] hover:shadow-[0_4px_20px_var(--color-accent-glow)] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
-        disabled={!frontFile || !backFile || !selfieFile || loading}
+        disabled={!frontFile || (needsBackSide && !backFile) || !selfieFile || loading}
         onClick={handleSubmit}
       >
         {loading && <span className="spinner" />}

@@ -17,15 +17,25 @@ export interface EkycConfig {
 // OCR – Extract information from ID card images
 // ============================================================
 
+/** Supported document types for OCR extraction */
+export enum DocumentType {
+  /** Citizen Identity Card */
+  CCCD = "CCCD",
+  /** Passport */
+  PASSPORT = "PASSPORT",
+  /** Driver's License */
+  GPLX = "GPLX",
+}
+
 export interface OcrRequest {
   /** Front side of the document (Blob, File, or base64 string) */
   documentFront: Blob | File | string;
 
-  /** Back side of the document (Blob, File, or base64 string) */
-  documentBack: Blob | File | string;
+  /** Back side of the document (Blob, File, or base64 string). Required for CCCD/GPLX, not needed for PASSPORT. */
+  documentBack?: Blob | File | string;
 
-  /** Document type, defaults to 'CCCD' */
-  documentType?: string;
+  /** Document type, defaults to DocumentType.CCCD */
+  documentType?: DocumentType | string;
 
   /** Whether to extract face region, defaults to true */
   extractFace?: boolean;
@@ -183,8 +193,8 @@ export interface EkycFlowInput {
   /** Back side of the document (Blob, File, or base64 string) */
   documentBack: Blob | File | string;
 
-  /** Document type, defaults to 'CCCD' */
-  documentType?: string;
+  /** Document type, defaults to DocumentType.CCCD */
+  documentType?: DocumentType | string;
 
   /** Whether to extract face from document, defaults to true */
   extractFace?: boolean;

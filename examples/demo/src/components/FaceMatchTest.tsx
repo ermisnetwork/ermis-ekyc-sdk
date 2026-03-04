@@ -3,10 +3,14 @@ import { EkycService, EkycError, type FaceMatchResponse } from "ermis-ekyc-sdk";
 import { FileUpload } from "./FileUpload";
 import { ResultPanel } from "./ResultPanel";
 
-export function FaceMatchTest() {
-  const [selfieFile, setSelfieFile] = useState<File | null>(null);
-  const [documentFile, setDocumentFile] = useState<File | null>(null);
-  const [threshold, setThreshold] = useState("0.6");
+interface FaceMatchTestProps {
+  initialSelfieFile?: File | null;
+  initialDocumentFile?: File | null;
+}
+
+export function FaceMatchTest({ initialSelfieFile, initialDocumentFile }: FaceMatchTestProps) {
+  const [selfieFile, setSelfieFile] = useState<File | null>(initialSelfieFile ?? null);
+  const [documentFile, setDocumentFile] = useState<File | null>(initialDocumentFile ?? null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<FaceMatchResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -19,7 +23,7 @@ export function FaceMatchTest() {
 
     try {
       const ekyc = EkycService.getInstance();
-      const res = await ekyc.matchFaces({ selfieImage: selfieFile, documentImage: documentFile, threshold });
+      const res = await ekyc.matchFaces({ selfieImage: selfieFile, documentImage: documentFile });
       setResult(res);
     } catch (err) {
       setError(err instanceof EkycError ? `[${err.code}] ${err.message}` : String(err));
@@ -35,19 +39,25 @@ export function FaceMatchTest() {
         Compare a selfie with a document photo for identity verification.
       </p>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
-        <FileUpload label="Selfie Image" onChange={setSelfieFile} />
-        <FileUpload label="Document Image" onChange={setDocumentFile} />
-      </div>
+      {/* Auto-filled hints */}
+      {(initialSelfieFile || initialDocumentFile) && (
+        <div className="flex items-center gap-2 px-4 py-3 mb-5 rounded-lg bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 text-sm">
+          💡 Images auto-filled from previous steps:
+          {initialDocumentFile && <span className="px-2 py-0.5 rounded bg-indigo-500/20 text-xs font-medium">Document (OCR)</span>}
+          {initialSelfieFile && <span className="px-2 py-0.5 rounded bg-indigo-500/20 text-xs font-medium">Selfie (Liveness)</span>}
+        </div>
+      )}
 
-      <div className="mb-5 max-w-[200px]">
-        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Threshold</label>
-        <input
-          type="text"
-          value={threshold}
-          onChange={(e) => setThreshold(e.target.value)}
-          placeholder="0.6"
-          className="w-full px-3 py-2.5 bg-[var(--color-bg-input)] border border-[var(--color-border)] rounded-lg text-sm text-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30"
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+        <FileUpload
+          label={`Selfie Image${initialSelfieFile ? " ✓" : ""}`}
+          onChange={setSelfieFile}
+          initialFile={initialSelfieFile ?? undefined}
+        />
+        <FileUpload
+          label={`Document Image${initialDocumentFile ? " ✓" : ""}`}
+          onChange={setDocumentFile}
+          initialFile={initialDocumentFile ?? undefined}
         />
       </div>
 

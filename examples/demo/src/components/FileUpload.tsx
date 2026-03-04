@@ -1,14 +1,24 @@
-import { useState, useCallback, type ChangeEvent } from "react";
+import { useState, useCallback, useEffect, type ChangeEvent } from "react";
 
 interface FileUploadProps {
   label: string;
   accept?: string;
   onChange: (file: File | null) => void;
+  initialFile?: File;
 }
 
-export function FileUpload({ label, accept = "image/*", onChange }: FileUploadProps) {
-  const [fileName, setFileName] = useState<string | null>(null);
+export function FileUpload({ label, accept = "image/*", onChange, initialFile }: FileUploadProps) {
+  const [fileName, setFileName] = useState<string | null>(initialFile?.name ?? null);
   const [preview, setPreview] = useState<string | null>(null);
+
+  // Generate preview for initial file
+  useEffect(() => {
+    if (initialFile && initialFile.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onload = () => setPreview(reader.result as string);
+      reader.readAsDataURL(initialFile);
+    }
+  }, [initialFile]);
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {

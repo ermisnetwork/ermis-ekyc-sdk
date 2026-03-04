@@ -23,6 +23,10 @@ export default function App() {
   const [apiKey, setApiKey] = useState(DEFAULT_API_KEY);
   const [initialized, setInitialized] = useState(false);
 
+  // Shared files between tabs: OCR document front → FaceMatch document, Liveness selfie → FaceMatch selfie
+  const [sharedDocumentFile, setSharedDocumentFile] = useState<File | null>(null);
+  const [sharedSelfieFile, setSharedSelfieFile] = useState<File | null>(null);
+
   const handleInit = useCallback(() => {
     EkycService.resetInstance();
     EkycService.getInstance({ baseUrl, apiKey });
@@ -70,8 +74,8 @@ export default function App() {
         <button
           onClick={handleInit}
           className={`px-5 py-2.5 rounded-lg text-sm font-semibold whitespace-nowrap transition-all ${initialized
-              ? "bg-[var(--color-bg-secondary)] text-slate-400 border border-[var(--color-border)] hover:text-slate-200"
-              : "bg-gradient-to-br from-indigo-500 to-purple-500 text-white shadow-[0_2px_12px_var(--color-accent-glow)]"
+            ? "bg-[var(--color-bg-secondary)] text-slate-400 border border-[var(--color-border)] hover:text-slate-200"
+            : "bg-gradient-to-br from-indigo-500 to-purple-500 text-white shadow-[0_2px_12px_var(--color-accent-glow)]"
             }`}
         >
           {initialized ? "✓ Connected" : "Initialize SDK"}
@@ -92,8 +96,8 @@ export default function App() {
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`flex-1 px-4 py-3 rounded-lg text-sm font-medium transition-all ${activeTab === tab.id
-                ? "bg-indigo-500 text-white shadow-[0_2px_8px_var(--color-accent-glow)]"
-                : "text-slate-400 hover:text-slate-200 hover:bg-[var(--color-bg-card)]"
+              ? "bg-indigo-500 text-white shadow-[0_2px_8px_var(--color-accent-glow)]"
+              : "text-slate-400 hover:text-slate-200 hover:bg-[var(--color-bg-card)]"
               }`}
           >
             {tab.label}
@@ -103,9 +107,14 @@ export default function App() {
 
       {/* Content */}
       {activeTab === "flow" && <FullFlowTest />}
-      {activeTab === "ocr" && <OcrTest />}
-      {activeTab === "liveness" && <LivenessTest />}
-      {activeTab === "facematch" && <FaceMatchTest />}
+      {activeTab === "ocr" && <OcrTest onDocumentFileChange={setSharedDocumentFile} />}
+      {activeTab === "liveness" && <LivenessTest onSelfieFileChange={setSharedSelfieFile} />}
+      {activeTab === "facematch" && (
+        <FaceMatchTest
+          initialDocumentFile={sharedDocumentFile}
+          initialSelfieFile={sharedSelfieFile}
+        />
+      )}
     </div>
   );
 }

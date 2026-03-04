@@ -1,15 +1,22 @@
 import { useState } from "react";
 import { EkycService, EkycError, type LivenessResponse } from "ermis-ekyc-sdk";
-import { FileUpload } from "./FileUpload";
+import { CameraCapture } from "./CameraCapture";
 import { ResultPanel } from "./ResultPanel";
 
-export function LivenessTest() {
+interface LivenessTestProps {
+  onSelfieFileChange?: (file: File | null) => void;
+}
+
+export function LivenessTest({ onSelfieFileChange }: LivenessTestProps) {
   const [selfieFile, setSelfieFile] = useState<File | null>(null);
-  const [mode, setMode] = useState("passive");
-  const [challenge, setChallenge] = useState("blink");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<LivenessResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const handleSelfieChange = (file: File | null) => {
+    setSelfieFile(file);
+    onSelfieFileChange?.(file);
+  };
 
   const handleSubmit = async () => {
     if (!selfieFile) return;
@@ -19,7 +26,7 @@ export function LivenessTest() {
 
     try {
       const ekyc = EkycService.getInstance();
-      const res = await ekyc.checkLiveness({ images: selfieFile, mode, challenge });
+      const res = await ekyc.checkLiveness({ images: selfieFile });
       setResult(res);
     } catch (err) {
       setError(err instanceof EkycError ? `[${err.code}] ${err.message}` : String(err));
@@ -43,46 +50,21 @@ export function LivenessTest() {
     <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl p-7 shadow-lg">
       <h2 className="text-xl font-semibold mb-1">🧬 Liveness Detection</h2>
       <p className="text-sm text-slate-400 mb-6">
-        Upload a selfie image to verify it's from a live person.
+        Take a selfie to verify you are a live person.
       </p>
 
-      <FileUpload label="Selfie Image" onChange={setSelfieFile} />
+      <CameraCapture label="Selfie" onChange={handleSelfieChange} />
 
-      <div className="flex gap-4 mt-5 mb-5">
-        <div className="flex-1">
-          <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Mode</label>
-          <select
-            value={mode}
-            onChange={(e) => setMode(e.target.value)}
-            className="w-full px-3 py-2.5 bg-[var(--color-bg-input)] border border-[var(--color-border)] rounded-lg text-sm text-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30"
-          >
-            <option value="passive">Passive</option>
-            <option value="active">Active</option>
-          </select>
-        </div>
-        <div className="flex-1">
-          <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Challenge</label>
-          <select
-            value={challenge}
-            onChange={(e) => setChallenge(e.target.value)}
-            className="w-full px-3 py-2.5 bg-[var(--color-bg-input)] border border-[var(--color-border)] rounded-lg text-sm text-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30"
-          >
-            <option value="blink">Blink</option>
-            <option value="smile">Smile</option>
-            <option value="turn_left">Turn Left</option>
-            <option value="turn_right">Turn Right</option>
-          </select>
-        </div>
+      <div className="mt-5">
+        <button
+          className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-br from-indigo-500 to-purple-500 text-white font-semibold rounded-lg shadow-[0_2px_12px_var(--color-accent-glow)] hover:translate-y-[-1px] hover:shadow-[0_4px_20px_var(--color-accent-glow)] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+          disabled={!selfieFile || loading}
+          onClick={handleSubmit}
+        >
+          {loading && <span className="spinner" />}
+          {loading ? "Checking..." : "Check Liveness"}
+        </button>
       </div>
-
-      <button
-        className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-br from-indigo-500 to-purple-500 text-white font-semibold rounded-lg shadow-[0_2px_12px_var(--color-accent-glow)] hover:translate-y-[-1px] hover:shadow-[0_4px_20px_var(--color-accent-glow)] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
-        disabled={!selfieFile || loading}
-        onClick={handleSubmit}
-      >
-        {loading && <span className="spinner" />}
-        {loading ? "Checking..." : "Check Liveness"}
-      </button>
 
       {loading && (
         <div className="flex items-center gap-2 mt-5 px-4 py-3 rounded-lg bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 text-sm">
