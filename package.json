@@ -2,12 +2,15 @@
   "name": "ermis-ekyc-sdk",
   "version": "1.0.0",
   "description": "Ermis eKYC SDK - OCR, Liveness Detection, Face Match",
+  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "demo:install": "npm run build && cd examples/demo && npm install",
+    "demo": "npm run build && cd examples/demo && npm run dev"
   },
   "keywords": [
     "ekyc",
