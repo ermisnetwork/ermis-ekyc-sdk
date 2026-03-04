@@ -1,0 +1,28 @@
+{
+  "name": "ermis-ekyc-sdk",
+  "version": "1.0.0",
+  "description": "Ermis eKYC SDK - OCR, Liveness Detection, Face Match",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "lint": "tsc --noEmit"
+  },
+  "keywords": [
+    "ekyc",
+    "ocr",
+    "liveness",
+    "face-match",
+    "sdk"
+  ],
+  "author": "Ermis Network",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.0"
+  }
+}
