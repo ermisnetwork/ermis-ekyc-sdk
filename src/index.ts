@@ -2,10 +2,12 @@
 // Ermis eKYC SDK – Entry Point
 // ============================================================
 
-// Main SDK class
+// ── eKYC Module ──────────────────────────────────────────────
+
+// Main eKYC class (API key authentication)
 export { EkycService } from "./EkycService";
 
-// Types & Interfaces
+// eKYC Types & Interfaces
 export { DocumentType } from "./types";
 export type {
   EkycConfig,
@@ -18,6 +20,38 @@ export type {
   EkycFlowInput,
   EkycFlowResult,
 } from "./types";
+
+// ── Ermis Module ─────────────────────────────────────────────
+
+// Main Ermis class (Bearer token authentication)
+export { ErmisService } from "./ErmisService";
+
+// Auth Types
+export type {
+  LoginRequest,
+  RegisterRequest,
+  RefreshTokenRequest,
+  User,
+  AuthResponse,
+  PaginationMeta,
+  ApiResponse,
+} from "./types/auth.types";
+
+// Customer Types
+export type {
+  Customer,
+  CreateCustomerRequest,
+  UpdateCustomerRequest,
+  CurrentLocation,
+} from "./types/customer.types";
+
+// Appraiser Types
+export type {
+  Appraiser,
+  CreateAppraiserRequest,
+} from "./types/appraiser.types";
+
+// ── Shared ───────────────────────────────────────────────────
 
 // Errors
 export { EkycError, EkycErrorCode } from "./errors/EkycError";
