@@ -270,7 +270,7 @@ npm run demo
 yarn demo
 ```
 
-The demo app will start at `http://localhost:5173`. Changes to SDK source files (`src/`) will auto-rebuild and hot-reload in the demo.
+The demo app will start at `http://localhost:3001`. Changes to SDK source files (`src/`) will auto-rebuild and hot-reload in the demo.
 
 ### Available Scripts
 
