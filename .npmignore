@@ -12,3 +12,14 @@ node_modules/
 coverage/
 *.log
 .DS_Store
+
+# Examples & demo
+examples/
+
+# Lock files
+yarn.lock
+package-lock.json
+
+# Git
+.git/
+.github/

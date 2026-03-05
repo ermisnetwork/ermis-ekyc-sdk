@@ -4,11 +4,26 @@
   "description": "Ermis eKYC SDK - OCR, Liveness Detection, Face Match",
   "type": "module",
   "main": "dist/index.js",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "sideEffects": false,
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
     "lint": "tsc --noEmit",
+    "prepublishOnly": "npm run build",
     "demo:install": "npm run build && cd examples/demo && npm install",
     "demo": "npm run build && concurrently -n sdk,demo -c blue,green \"tsc --watch --preserveWatchOutput\" \"cd examples/demo && npm run dev\""
   },
@@ -17,10 +32,26 @@
     "ocr",
     "liveness",
     "face-match",
-    "sdk"
+    "face-recognition",
+    "identity-verification",
+    "kyc",
+    "sdk",
+    "typescript",
+    "ermis"
   ],
   "author": "Ermis Network",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ermisnetwork/ermis-ekyc-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ermisnetwork/ermis-ekyc-sdk/issues"
+  },
+  "homepage": "https://github.com/ermisnetwork/ermis-ekyc-sdk#readme",
+  "engines": {
+    "node": ">=18"
+  },
   "dependencies": {
     "axios": "^1.7.0"
   },
