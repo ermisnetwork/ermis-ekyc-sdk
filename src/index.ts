@@ -51,6 +51,18 @@ export type {
   CreateAppraiserRequest,
 } from "./types/appraiser.types";
 
+// Meeting Types
+export type {
+  Meeting,
+  CreateMeetingRequest,
+  UpdateMeetingRequest,
+  MeetingRegistrant,
+  CreateRegistrantRequest,
+  UpdateRegistrantRequest,
+  SetupMeetingRequest,
+  SetupMeetingResult,
+} from "./types/meeting.types";
+
 // ── Shared ───────────────────────────────────────────────────
 
 // Errors

@@ -24,6 +24,9 @@ export enum EkycErrorCode {
   /** Authentication failed (invalid API key) */
   AUTHENTICATION_FAILED = "AUTHENTICATION_FAILED",
 
+  /** Invalid registrant configuration (wrong count or roles) */
+  INVALID_REGISTRANTS = "INVALID_REGISTRANTS",
+
   /** Unknown error */
   UNKNOWN = "UNKNOWN",
 }

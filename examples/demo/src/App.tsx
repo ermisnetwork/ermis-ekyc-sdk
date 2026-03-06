@@ -4,6 +4,7 @@ import { useAuthStore } from "./stores/authStore";
 import { LoginPage } from "./pages/LoginPage";
 import { CustomerListPage } from "./pages/CustomerListPage";
 import { AppraiserListPage } from "./pages/AppraiserListPage";
+import { MeetingListPage } from "./pages/MeetingListPage";
 import { OcrTest } from "./components/OcrTest";
 import { LivenessTest } from "./components/LivenessTest";
 import { FaceMatchTest } from "./components/FaceMatchTest";
@@ -11,7 +12,7 @@ import { FullFlowTest } from "./components/FullFlowTest";
 
 type TopTab = "ekyc" | "management";
 type EkycTab = "flow" | "ocr" | "liveness" | "facematch";
-type MgmtTab = "customers" | "appraisers";
+type MgmtTab = "customers" | "appraisers" | "meetings";
 
 const EKYC_TABS: { id: EkycTab; label: string }[] = [
   { id: "flow", label: "🚀 Full Flow" },
@@ -221,11 +222,21 @@ export default function App() {
                 >
                   🔍 Thẩm định viên
                 </button>
+                <button
+                  onClick={() => setMgmtTab("meetings")}
+                  className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${mgmtTab === "meetings"
+                    ? "bg-purple-500/20 text-purple-300 border border-purple-500/30"
+                    : "text-slate-400 hover:text-slate-200"
+                    }`}
+                >
+                  📋 Phiên thẩm định
+                </button>
               </div>
 
               {/* Management Content */}
               {mgmtTab === "customers" && <CustomerListPage />}
               {mgmtTab === "appraisers" && <AppraiserListPage />}
+              {mgmtTab === "meetings" && <MeetingListPage />}
             </>
           )}
         </>

@@ -3,6 +3,7 @@ import { TokenHttpClient, TokenHttpClientConfig } from "./http/tokenHttpClient";
 import { AuthService } from "./services/authService";
 import { CustomerService } from "./services/customerService";
 import { AppraiserService } from "./services/appraiserService";
+import { MeetingService } from "./services/meetingService";
 
 /**
  * ErmisService – Main class for authenticated API operations.
@@ -50,6 +51,9 @@ export class ErmisService {
   /** Appraiser service – list and create */
   public readonly appraisers: AppraiserService;
 
+  /** Meeting service – appraisal sessions CRUD */
+  public readonly meetings: MeetingService;
+
   // ── Private Constructor ────────────────────────────────────
   private constructor(config: TokenHttpClientConfig) {
     this.validateConfig(config);
@@ -60,6 +64,7 @@ export class ErmisService {
     this.auth = new AuthService(client);
     this.customers = new CustomerService(client);
     this.appraisers = new AppraiserService(client);
+    this.meetings = new MeetingService(client);
   }
 
   // ── Singleton Access ───────────────────────────────────────
