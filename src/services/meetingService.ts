@@ -1,4 +1,4 @@
-import { AxiosInstance } from "axios";
+import axios, { AxiosInstance } from "axios";
 import {
   Meeting,
   CreateMeetingRequest,
@@ -17,9 +17,11 @@ import { EkycError, EkycErrorCode } from "../errors/EkycError";
  */
 export class MeetingService {
   private readonly httpClient: AxiosInstance;
+  private readonly publicClient: AxiosInstance;
 
-  constructor(httpClient: AxiosInstance) {
+  constructor(httpClient: AxiosInstance, baseUrl: string) {
     this.httpClient = httpClient;
+    this.publicClient = axios.create({ baseURL: baseUrl, timeout: 30_000 });
   }
 
   // ── Meetings ─────────────────────────────────────────────
@@ -236,7 +238,7 @@ export class MeetingService {
    */
   async joinWithCode(joinCode: string): Promise<unknown> {
     try {
-      const response = await this.httpClient.post("/meet/join-with-code", {
+      const response = await this.publicClient.post("/meet/join-with-code", {
         joinCode,
       });
       return (response.data as any).data;

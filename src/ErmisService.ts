@@ -64,7 +64,7 @@ export class ErmisService {
     this.auth = new AuthService(client);
     this.customers = new CustomerService(client);
     this.appraisers = new AppraiserService(client);
-    this.meetings = new MeetingService(client);
+    this.meetings = new MeetingService(client, config.baseUrl);
   }
 
   // ── Singleton Access ───────────────────────────────────────

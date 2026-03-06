@@ -5,12 +5,13 @@ import { LoginPage } from "./pages/LoginPage";
 import { CustomerListPage } from "./pages/CustomerListPage";
 import { AppraiserListPage } from "./pages/AppraiserListPage";
 import { MeetingListPage } from "./pages/MeetingListPage";
+import { ReactSdkPage } from "./pages/ReactSdkPage";
 import { OcrTest } from "./components/OcrTest";
 import { LivenessTest } from "./components/LivenessTest";
 import { FaceMatchTest } from "./components/FaceMatchTest";
 import { FullFlowTest } from "./components/FullFlowTest";
 
-type TopTab = "ekyc" | "management";
+type TopTab = "ekyc" | "management" | "reactsdk";
 type EkycTab = "flow" | "ocr" | "liveness" | "facematch";
 type MgmtTab = "customers" | "appraisers" | "meetings";
 
@@ -109,6 +110,15 @@ export default function App() {
           {!isAuthenticated && (
             <span className="ml-1.5 text-[10px] opacity-60">(cần đăng nhập)</span>
           )}
+        </button>
+        <button
+          onClick={() => setTopTab("reactsdk")}
+          className={`flex-1 px-4 py-3 rounded-lg text-sm font-medium transition-all ${topTab === "reactsdk"
+            ? "bg-indigo-500 text-white shadow-[0_2px_8px_var(--color-accent-glow)]"
+            : "text-slate-400 hover:text-slate-200 hover:bg-[var(--color-bg-card)]"
+            }`}
+        >
+          📦 React SDK
         </button>
       </div>
 
@@ -241,6 +251,9 @@ export default function App() {
           )}
         </>
       )}
+
+      {/* ── React SDK Section ───────────────────────────────────── */}
+      {topTab === "reactsdk" && <ReactSdkPage />}
     </div>
   );
 }

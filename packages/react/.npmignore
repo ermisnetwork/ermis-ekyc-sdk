@@ -1,0 +1,21 @@
+# Source files
+src/
+
+# Config files
+tsconfig.json
+.eslintrc.json
+.gitignore
+
+# Dev files
+node_modules/
+coverage/
+*.log
+.DS_Store
+
+# Lock files
+yarn.lock
+package-lock.json
+
+# Git
+.git/
+.github/

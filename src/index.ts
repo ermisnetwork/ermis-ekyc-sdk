@@ -51,6 +51,9 @@ export type {
   CreateAppraiserRequest,
 } from "./types/appraiser.types";
 
+// Meeting Service
+export { MeetingService } from "./services/meetingService";
+
 // Meeting Types
 export type {
   Meeting,
