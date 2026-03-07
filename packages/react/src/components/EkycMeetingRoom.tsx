@@ -1,16 +1,22 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import type { JoinWithCodeResponse } from "../types/meeting.types";
 import "./EkycMeetingRoom.css";
+import { ChannelName, ErmisClassroomProvider, useErmisClassroom } from "@ermisnetwork/ermis-classroom-react";
+import { QualityLevel } from "@ermisnetwork/ermis-classroom-sdk";
 
 // ============================================================
 // EkycMeetingRoom – Default placeholder for the meeting room UI
 // ============================================================
 
 export interface EkycMeetingRoomProps {
-  /**
-   * Data returned from `joinWithCode` API.
-   * This will contain room/token info needed by the meeting SDK.
-   */
-  meetingData: unknown;
+  /** Meeting host URL (from provider config) */
+  meetingHostUrl: string;
+  /** Meeting node URL (from provider config) */
+  meetingNodeUrl: string;
+  /** Local media stream from preview (camera + mic guaranteed) */
+  localStream: MediaStream;
+  /** Typed data returned from `joinWithCode` API */
+  meetingData: JoinWithCodeResponse;
   /** Callback when user leaves the meeting */
   onLeave?: () => void;
   /** Optional custom CSS class name on root element */
@@ -18,8 +24,6 @@ export interface EkycMeetingRoomProps {
 
   // ── Visibility controls ──────────────────────────────────
 
-  /** Show the meeting data debug panel. @default false */
-  showDebugInfo?: boolean;
   /** Show the bottom control bar (mic, camera, share, leave). @default true */
   showControls?: boolean;
   /** Show the share screen button in controls. @default true */
@@ -36,58 +40,98 @@ export interface EkycMeetingRoomProps {
 }
 
 /**
- * Default EkycMeetingRoom component – placeholder for the actual meeting SDK integration.
+ * EkycMeetingRoom – outer wrapper that provides the ErmisClassroomProvider.
  *
- * @example
- * ```tsx
- * <EkycMeetingProvider baseUrl="https://api-ekyc.ermis.network">
- *   <EkycMeetingRoom
- *     meetingData={joinData}
- *     showDebugInfo
- *     showShareScreen={false}
- *     onLeave={() => navigate('/')}
- *   />
- * </EkycMeetingProvider>
- * ```
+ * On mount: authenticate(authId) → joinRoom(ermisRoomCode)
  */
-export function EkycMeetingRoom({
+export function EkycMeetingRoom(props: EkycMeetingRoomProps) {
+  const { meetingHostUrl, meetingNodeUrl, className } = props;
+  const rootClass = ["ekyc-room-root", className].filter(Boolean).join(" ");
+
+  const config = {
+    host: meetingHostUrl,
+    hostNode: meetingNodeUrl?.replace("https://", ""),
+    apiUrl: `${meetingHostUrl}/meeting`,
+    webtpUrl: `${meetingNodeUrl}/meeting/wt`,
+    reconnectAttempts: 3,
+    reconnectDelay: 1000,
+    videoResolutions: [ChannelName.VIDEO_1080P],
+    subscriberInitQuality: 'video_1080p' as QualityLevel,
+  };
+
+  return (
+    <div className={rootClass}>
+      <ErmisClassroomProvider config={config}>
+        <EkycMeetingRoomInner {...props} />
+      </ErmisClassroomProvider>
+    </div>
+  );
+}
+
+// ── Inner component (inside ErmisClassroomProvider) ─────────
+
+function EkycMeetingRoomInner({
+  meetingHostUrl,
+  meetingNodeUrl,
+  localStream,
   meetingData,
   onLeave,
-  className,
-  showDebugInfo = false,
   showControls = true,
   showShareScreen = true,
   leaveButtonLabel = "Rời phòng",
   hostLabel = "Thẩm định viên (HOST)",
   guestLabel = "Khách hàng (GUEST)",
 }: EkycMeetingRoomProps) {
-  const rootClass = ["ekyc-room-root", className].filter(Boolean).join(" ");
+  const { client, authenticate, joinRoom } = useErmisClassroom();
+
+  const [roomStatus, setRoomStatus] = useState<"connecting" | "connected" | "error">("connecting");
+  const [roomError, setRoomError] = useState<string | null>(null);
+
+  // ── On mount: wait for client → authenticate → joinRoom ──
+  useEffect(() => {
+    if (!client) return; // client not ready yet, wait for re-render
+
+    const { registrant, meeting } = meetingData;
+
+    const connectToRoom = async () => {
+      try {
+        setRoomStatus("connecting");
+        setRoomError(null);
+
+        // Step 1: Authenticate with authId
+        await authenticate(registrant.authId);
+
+        // Step 2: Join room with ermisRoomCode
+        await joinRoom(meeting.ermisRoomCode);
+
+        setRoomStatus("connected");
+      } catch (err: unknown) {
+        const error = err instanceof Error ? err : new Error("Kết nối phòng thất bại");
+        setRoomError(error.message);
+        setRoomStatus("error");
+        console.error("[EkycMeetingRoom] Connect error:", err);
+      }
+    };
+
+    connectToRoom();
+  }, [client]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div className={rootClass}>
+    <>
+      {/* ── Status indicator ──────────────────────────────── */}
+      {roomStatus === "connecting" && (
+        <div className="ekyc-room-status">Đang kết nối phòng họp...</div>
+      )}
+      {roomStatus === "error" && roomError && (
+        <div className="ekyc-room-error">⚠️ {roomError}</div>
+      )}
+
       {/* ── Main content area ─────────────────────────────── */}
       <div className="ekyc-room-main">
         {/* Placeholder video grid */}
         <div className="ekyc-room-grid">
           <VideoPlaceholder label={hostLabel} color="#6366f1" />
           <VideoPlaceholder label={guestLabel} color="#8b5cf6" />
-        </div>
-
-        {/* Meeting info */}
-        <div className="ekyc-room-info">
-          <p className="ekyc-room-info-text">
-            Đây là component mặc định. Tích hợp meeting SDK/library tại đây.
-          </p>
-          {showDebugInfo && meetingData != null && (
-            <details className="ekyc-room-debug">
-              <summary className="ekyc-room-debug-summary">
-                Meeting Data (debug)
-              </summary>
-              <pre className="ekyc-room-debug-pre">
-                {JSON.stringify(meetingData, null, 2)}
-              </pre>
-            </details>
-          )}
         </div>
       </div>
 
@@ -107,7 +151,25 @@ export function EkycMeetingRoom({
           </button>
         </div>
       )}
-    </div>
+
+      {/* ── Raw JSON data ─────────────────────────────────── */}
+      <pre className="ekyc-room-debug-pre">
+        {JSON.stringify(
+          {
+            meetingHostUrl,
+            meetingNodeUrl,
+            hasLocalStream: localStream != null,
+            localStreamTracks: localStream
+              ?.getTracks()
+              .map((t) => ({ kind: t.kind, label: t.label, enabled: t.enabled })),
+            meetingData,
+            roomStatus,
+          },
+          null,
+          2,
+        )}
+      </pre>
+    </>
   );
 }
 

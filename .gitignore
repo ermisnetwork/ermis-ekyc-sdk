@@ -28,3 +28,5 @@ coverage/
 
 # Temp
 tmp/
+# NPM registry tokens
+**/.npmrc

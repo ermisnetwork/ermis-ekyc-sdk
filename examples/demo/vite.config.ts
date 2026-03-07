@@ -10,4 +10,7 @@ export default defineConfig({
     port: 3001,
     allowedHosts: ["tuanmua.bandia.vn"],
   },
+  resolve: {
+    dedupe: ["react", "react-dom"],
+  },
 });

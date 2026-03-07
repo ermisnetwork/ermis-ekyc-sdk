@@ -4,9 +4,12 @@ import {
   EkycMeetingProvider,
   EkycMeetingPreview,
   EkycMeetingRoom,
+  type EkycPreviewJoinData,
 } from "ermis-ekyc-react";
 
-const DEFAULT_API_BASE = "https://api-ekyc.ermis.network";
+const DEFAULT_EKYC_API = "https://api-ekyc.ermis.network";
+const DEFAULT_MEETING_HOST = "https://ubuntu-server.trungdt.xyz:9937";
+const DEFAULT_MEETING_NODE = "https://ubuntu-server.trungdt.xyz:9900";
 
 type View = "input" | "preview" | "room";
 
@@ -16,7 +19,7 @@ type View = "input" | "preview" | "room";
 export function ReactSdkPage() {
   const [joinCode, setJoinCode] = useState("");
   const [view, setView] = useState<View>("input");
-  const [meetingData, setMeetingData] = useState<unknown>(null);
+  const [roomData, setRoomData] = useState<EkycPreviewJoinData | null>(null);
 
   const handleStartPreview = useCallback(() => {
     if (joinCode.trim()) {
@@ -24,14 +27,14 @@ export function ReactSdkPage() {
     }
   }, [joinCode]);
 
-  const handleJoinSuccess = useCallback((data: unknown) => {
-    setMeetingData(data);
+  const handleJoinMeeting = useCallback((data: EkycPreviewJoinData) => {
+    setRoomData(data);
     setView("room");
   }, []);
 
   const handleLeave = useCallback(() => {
     setView("input");
-    setMeetingData(null);
+    setRoomData(null);
   }, []);
 
   const handleBackToInput = useCallback(() => {
@@ -79,7 +82,11 @@ export function ReactSdkPage() {
 
       {/* ── Preview + Room wrapped in Provider ─────────────── */}
       {view !== "input" && (
-        <EkycMeetingProvider baseUrl={DEFAULT_API_BASE}>
+        <EkycMeetingProvider
+          ekycApiUrl={DEFAULT_EKYC_API}
+          meetingHostUrl={DEFAULT_MEETING_HOST}
+          meetingNodeUrl={DEFAULT_MEETING_NODE}
+        >
           {view === "preview" && (
             <>
               <div className="mb-4">
@@ -96,17 +103,19 @@ export function ReactSdkPage() {
               <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl p-6">
                 <EkycMeetingPreview
                   joinCode={joinCode}
-                  onJoinSuccess={handleJoinSuccess}
+                  onJoinMeeting={handleJoinMeeting}
                   onJoinError={(err: Error) => console.error("Join failed:", err)}
                 />
               </div>
             </>
           )}
 
-          {view === "room" && (
+          {view === "room" && roomData && (
             <EkycMeetingRoom
-              meetingData={meetingData}
-              showDebugInfo
+              meetingHostUrl={roomData.meetingHostUrl}
+              meetingNodeUrl={roomData.meetingNodeUrl}
+              localStream={roomData.localStream}
+              meetingData={roomData.meetingData}
               onLeave={handleLeave}
             />
           )}

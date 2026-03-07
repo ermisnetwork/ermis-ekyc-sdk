@@ -1,18 +1,29 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { ErmisService } from "ermis-ekyc-sdk";
 import { useMediaPreview } from "../hooks/useMediaPreview";
+import { useEkycMeetingConfig } from "../EkycMeetingProvider";
+import type { JoinWithCodeResponse } from "../types/meeting.types";
 import "./EkycMeetingPreview.css";
 
 // ============================================================
 // EkycMeetingPreview – test mic/cam and join meeting with code
 // ============================================================
 
+/** Data passed from Preview to Room when user clicks "Join". */
+export interface EkycPreviewJoinData {
+  meetingHostUrl: string;
+  meetingNodeUrl: string;
+  /** Local stream – guaranteed non-null (camera + mic required to join) */
+  localStream: MediaStream;
+  meetingData: JoinWithCodeResponse;
+}
+
 export interface EkycMeetingPreviewProps {
   /** The join code for this registrant */
   joinCode: string;
-  /** Callback when join succeeds – receives meeting data from API */
-  onJoinSuccess?: (meetingData: unknown) => void;
-  /** Callback when join fails */
+  /** Callback when user clicks Join – receives all data needed by EkycMeetingRoom */
+  onJoinMeeting?: (data: EkycPreviewJoinData) => void;
+  /** Callback when joinWithCode fails */
   onJoinError?: (error: Error) => void;
   /** Optional custom CSS class name on root element */
   className?: string;
@@ -36,28 +47,35 @@ export interface EkycMeetingPreviewProps {
   headerDescription?: string;
   /** Custom join button text. @default "Tham gia phiên thẩm định" */
   joinButtonLabel?: string;
-  /** Custom text shown while joining. @default "Đang tham gia..." */
+  /** Custom text shown while joining. @default "Đang kết nối..." */
   joiningLabel?: string;
 }
 
 /**
  * Preview component for testing mic/camera before joining a meeting.
  *
+ * Flow:
+ * 1. Mount → auto-calls `joinWithCode` to get meeting data.
+ * 2. User tests camera/mic.
+ * 3. User clicks **Join** → `onJoinMeeting` fires with `EkycPreviewJoinData`.
+ *
  * @example
  * ```tsx
- * <EkycMeetingProvider baseUrl="https://api-ekyc.ermis.network">
+ * <EkycMeetingProvider
+ *   ekycApiUrl="https://api-ekyc.ermis.network"
+ *   meetingServerUrl="https://meet.ermis.network"
+ *   meetingNodeUrl="https://node.ermis.network"
+ * >
  *   <EkycMeetingPreview
  *     joinCode="ABC123"
- *     showDeviceSelectors={false}
- *     joinButtonLabel="Bắt đầu"
- *     onJoinSuccess={(data) => setView('meeting')}
+ *     onJoinMeeting={(data) => setRoomData(data)}
  *   />
  * </EkycMeetingProvider>
  * ```
  */
 export function EkycMeetingPreview({
   joinCode,
-  onJoinSuccess,
+  onJoinMeeting,
   onJoinError,
   className,
   showHeader = true,
@@ -67,9 +85,11 @@ export function EkycMeetingPreview({
   headerTitle = "Kiểm tra thiết bị",
   headerDescription = "Kiểm tra camera và micro trước khi tham gia phiên thẩm định",
   joinButtonLabel = "Tham gia phiên thẩm định",
-  joiningLabel = "Đang tham gia...",
+  joiningLabel = "Đang kết nối...",
 }: EkycMeetingPreviewProps) {
   const meetingService = ErmisService.getInstance().meetings;
+  const { meetingHostUrl, meetingNodeUrl } = useEkycMeetingConfig();
+
   const {
     stream,
     videoEnabled,
@@ -88,19 +108,21 @@ export function EkycMeetingPreview({
     cleanup,
   } = useMediaPreview();
 
-  const videoRef = useRef<HTMLVideoElement>(null);
   const audioBarsRef = useRef<HTMLDivElement>(null);
   const [isJoining, setIsJoining] = useState(false);
   const [joinError, setJoinError] = useState<string | null>(null);
+  const [meetingData, setMeetingData] = useState<JoinWithCodeResponse | null>(null);
+  const [isReady, setIsReady] = useState(false);
 
-  console.log('---joinCode---', joinCode)
-
-  // ── Attach stream to video element ─────────────────────────
-  useEffect(() => {
-    if (videoRef.current && stream) {
-      videoRef.current.srcObject = stream;
-    }
-  }, [stream]);
+  // ── Callback ref: attach stream as soon as <video> mounts ──
+  const videoRefCallback = useCallback(
+    (node: HTMLVideoElement | null) => {
+      if (node && stream) {
+        node.srcObject = stream;
+      }
+    },
+    [stream],
+  );
 
   // ── Update audio bars via RAF (no re-renders) ──────────────
   useEffect(() => {
@@ -123,7 +145,7 @@ export function EkycMeetingPreview({
     return () => cancelAnimationFrame(rafId);
   }, [showAudioLevel, audioEnabled, stream, audioLevelRef]);
 
-  // ── Auto join on mount ──────────────────────────────────────
+  // ── Auto-call joinWithCode on mount ─────────────────────────
   useEffect(() => {
     if (!joinCode) return;
     setIsJoining(true);
@@ -131,8 +153,10 @@ export function EkycMeetingPreview({
 
     meetingService
       .joinWithCode(joinCode)
-      .then((result) => {
-        onJoinSuccess?.(result);
+      .then((result: unknown) => {
+        const response = result as { success: boolean; data: JoinWithCodeResponse };
+        setMeetingData(response.data);
+        setIsReady(true);
       })
       .catch((err: unknown) => {
         const error =
@@ -145,10 +169,19 @@ export function EkycMeetingPreview({
       });
   }, [joinCode]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Join button handler (placeholder) ──────────────────────
+  // ── Derived: can the user join? ─────────────────────────────
+  const canJoin = isReady && !!stream && videoEnabled && audioEnabled && !isJoining && !isLoading;
+
+  // ── Join button handler ────────────────────────────────────
   const handleJoin = useCallback(() => {
-    // TODO: implement custom join logic if needed
-  }, []);
+    if (!meetingData || !stream) return;
+    onJoinMeeting?.({
+      meetingHostUrl,
+      meetingNodeUrl,
+      localStream: stream,
+      meetingData,
+    });
+  }, [onJoinMeeting, meetingHostUrl, meetingNodeUrl, stream, meetingData]);
 
   const rootClass = ["ekyc-preview-root", className].filter(Boolean).join(" ");
 
@@ -175,7 +208,7 @@ export function EkycMeetingPreview({
           </div>
         ) : (
           <video
-            ref={videoRef}
+            ref={videoRefCallback}
             autoPlay
             playsInline
             muted
@@ -245,7 +278,7 @@ export function EkycMeetingPreview({
       {/* ── Join button ─────────────────────────────────────── */}
       <button
         onClick={handleJoin}
-        disabled={isJoining || isLoading || !joinCode}
+        disabled={!canJoin}
         className="ekyc-preview-join-btn"
       >
         {isJoining ? joiningLabel : joinButtonLabel}

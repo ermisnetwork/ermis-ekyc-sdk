@@ -6,16 +6,22 @@ import { ErmisService } from "ermis-ekyc-sdk";
 // ============================================================
 
 export interface EkycMeetingConfig {
-  // Placeholder for future configs (theme, locale, etc.)
+  /** URL of the meeting server (host) */
+  meetingHostUrl: string;
+  /** URL of the meeting node */
+  meetingNodeUrl: string;
 }
 
-const EkycMeetingContext = createContext<EkycMeetingConfig>({});
+const EkycMeetingContext = createContext<EkycMeetingConfig>({
+  meetingHostUrl: "",
+  meetingNodeUrl: "",
+});
 
 // ── Provider ─────────────────────────────────────────────────
 
 export interface EkycMeetingProviderProps extends EkycMeetingConfig {
-  /** Base URL of the Ermis API – used to initialize ErmisService singleton */
-  baseUrl: string;
+  /** Base URL of the Ermis eKYC API – used to initialize ErmisService singleton */
+  ekycApiUrl: string;
   children: React.ReactNode;
 }
 
@@ -28,22 +34,30 @@ export interface EkycMeetingProviderProps extends EkycMeetingConfig {
  *
  * @example
  * ```tsx
- * <EkycMeetingProvider baseUrl="https://api-ekyc.ermis.network">
+ * <EkycMeetingProvider
+ *   ekycApiUrl="https://api-ekyc.ermis.network"
+ *   meetingServerUrl="https://meet.ermis.network"
+ *   meetingNodeUrl="https://node.ermis.network"
+ * >
  *   <EkycMeetingPreview joinCode="ABC123" />
  * </EkycMeetingProvider>
  * ```
  */
 export function EkycMeetingProvider({
-  baseUrl,
+  ekycApiUrl,
+  meetingHostUrl,
+  meetingNodeUrl,
   children,
-  ...config
 }: EkycMeetingProviderProps) {
   // Initialize ErmisService singleton (idempotent – safe to call multiple times)
   useMemo(() => {
-    ErmisService.getInstance({ baseUrl });
-  }, [baseUrl]);
+    ErmisService.getInstance({ baseUrl: ekycApiUrl });
+  }, [ekycApiUrl]);
 
-  const value = useMemo(() => ({ ...config }), [config]);
+  const value = useMemo<EkycMeetingConfig>(
+    () => ({ meetingHostUrl, meetingNodeUrl }),
+    [meetingHostUrl, meetingNodeUrl],
+  );
 
   return (
     <EkycMeetingContext.Provider value={value}>

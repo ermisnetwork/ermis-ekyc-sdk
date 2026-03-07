@@ -14,6 +14,7 @@ export {
 export {
   EkycMeetingPreview,
   type EkycMeetingPreviewProps,
+  type EkycPreviewJoinData,
 } from "./components/EkycMeetingPreview";
 export {
   EkycMeetingRoom,
@@ -27,3 +28,11 @@ export {
   type MediaPreviewState,
   type MediaPreviewActions,
 } from "./hooks/useMediaPreview";
+
+// ── Types ───────────────────────────────────────────────────
+export type {
+  JoinWithCodeResponse,
+  MeetingRoomInfo,
+  MeetingRegistrantInfo,
+  MeetingInfo,
+} from "./types/meeting.types";
