@@ -1,9 +1,9 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import type { JoinWithCodeResponse } from "../types/meeting.types";
 import { ErmisService } from "ermis-ekyc-sdk";
 import { useEkycMeetingConfig } from "../EkycMeetingProvider";
 import "./EkycMeetingRoom.css";
-import { ChannelName, ErmisClassroomProvider, useErmisClassroom } from "@ermisnetwork/ermis-classroom-react";
+import { ChannelName, ErmisClassroomProvider, useErmisClassroom, useMediaDevices } from "@ermisnetwork/ermis-classroom-react";
 import { QualityLevel } from "@ermisnetwork/ermis-classroom-sdk";
 
 // ============================================================
@@ -80,15 +80,58 @@ function EkycMeetingRoomInner({
     client,
     authenticate,
     joinRoom,
+    leaveRoom,
     remoteStreams,
     localStream: sdkLocalStream,
+    toggleMicrophone,
+    toggleCamera,
+    micEnabled,
+    videoEnabled,
+    participants,
   } = useErmisClassroom();
+
+  const {
+    cameras,
+    microphones,
+    selectCamera,
+    selectMicrophone,
+    selectedCamera,
+    selectedMicrophone,
+  } = useMediaDevices();
 
   const [roomStatus, setRoomStatus] = useState<"connecting" | "connected" | "error">("connecting");
   const [roomError, setRoomError] = useState<string | null>(null);
+  const [openMenu, setOpenMenu] = useState<"mic" | "cam" | null>(null);
 
   // Use SDK local stream when available, fall back to preview localStream
   const activeLocalStream = sdkLocalStream;
+
+  // ── Toggle handlers ─────────────────────────────────────────
+  const handleToggleMic = useCallback(async () => {
+    try {
+      await toggleMicrophone();
+    } catch (err) {
+      console.error("[EkycMeetingRoom] Toggle mic error:", err);
+    }
+  }, [toggleMicrophone]);
+
+  const handleToggleCam = useCallback(async () => {
+    try {
+      await toggleCamera();
+    } catch (err) {
+      console.error("[EkycMeetingRoom] Toggle camera error:", err);
+    }
+  }, [toggleCamera]);
+
+  const handleLeaveRoom = useCallback(async () => {
+    try {
+      await leaveRoom();
+    } catch (err) {
+      console.error("[EkycMeetingRoom] Leave room error:", err);
+    } finally {
+      onLeave?.();
+    }
+  }, [leaveRoom, onLeave]);
 
   // ── On mount: wait for client → authenticate → joinRoom ──
   useEffect(() => {
@@ -143,46 +186,118 @@ function EkycMeetingRoomInner({
       {/* ── Main content area ─────────────────────────────── */}
       <div className="ekyc-room-main">
         <div className="ekyc-room-grid">
-          {/* ── Local video ──────────────────────────────── */}
-          <div className="ekyc-room-tile">
-            <VideoTile
-              stream={activeLocalStream}
-              muted
-              mirrored
-            />
-            <span className="ekyc-room-tile-label">
-              {meetingData.registrant.role === "HOST" ? hostLabel : guestLabel} (Bạn)
-            </span>
-          </div>
+          {(() => {
+            const isHost = meetingData.registrant.role === "HOST";
 
-          {/* ── Remote videos ────────────────────────────── */}
-          {remoteStreamEntries.map(([userId, stream]) => (
-            <div key={userId} className="ekyc-room-tile">
-              <VideoTile stream={stream} />
-              <span className="ekyc-room-tile-label">
-                {meetingData.registrant.role === "HOST" ? guestLabel : hostLabel}
-              </span>
-            </div>
-          ))}
+            // Local tile
+            const localTile = (
+              <div
+                key="local"
+                className={`ekyc-room-tile ${isHost ? "ekyc-room-tile--pip" : "ekyc-room-tile--main"}`}
+              >
+                <VideoTile stream={activeLocalStream} muted mirrored />
+                {!videoEnabled && <CameraOffOverlay />}
+                {!micEnabled && <MicStatusBadge />}
+                <span className="ekyc-room-tile-label">
+                  {isHost ? hostLabel : guestLabel} (B{'\u1ea1'}n)
+                </span>
+              </div>
+            );
 
-          {/* ── Placeholder when no remote streams yet ──── */}
-          {remoteStreamEntries.length === 0 && (
-            <div className="ekyc-room-tile">
-              <VideoPlaceholder
-                label={meetingData.registrant.role === "HOST" ? guestLabel : hostLabel}
-                color="#8b5cf6"
-              />
-            </div>
-          )}
+            // Remote tile(s) or placeholder
+            const remoteTile = remoteStreamEntries.length > 0
+              ? remoteStreamEntries.map(([userId, stream]) => {
+                const participant = participants.get(userId);
+                const isRemoteMicOff = participant ? !participant.isAudioEnabled : false;
+                const isRemoteCamOff = participant ? !participant.isVideoEnabled : false;
+                return (
+                  <div
+                    key={userId}
+                    className={`ekyc-room-tile ${isHost ? "ekyc-room-tile--main" : "ekyc-room-tile--pip"}`}
+                  >
+                    <VideoTile stream={stream} />
+                    {isRemoteCamOff && <CameraOffOverlay />}
+                    {isRemoteMicOff && <MicStatusBadge />}
+                    <span className="ekyc-room-tile-label">
+                      {isHost ? guestLabel : hostLabel}
+                    </span>
+                  </div>
+                );
+              })
+              : (
+                <div
+                  key="placeholder"
+                  className={`ekyc-room-tile ${isHost ? "ekyc-room-tile--main" : "ekyc-room-tile--pip"}`}
+                >
+                  <VideoPlaceholder
+                    label={isHost ? guestLabel : hostLabel}
+                    color="#8b5cf6"
+                  />
+                </div>
+              );
+
+            // Main tile first (background on mobile), PiP on top
+            return isHost ? (
+              <>{remoteTile}{localTile}</>
+            ) : (
+              <>{localTile}{remoteTile}</>
+            );
+          })()}
         </div>
       </div>
 
       {/* ── Bottom controls bar ───────────────────────────── */}
       {showControls && (
         <div className="ekyc-room-controls">
-          <ControlButton icon="mic" label="Micro" />
-          <ControlButton icon="camera" label="Camera" />
-          <button onClick={onLeave} className="ekyc-room-leave-btn">
+          {/* Mic toggle + device switcher */}
+          <DeviceControlGroup
+            menuOpen={openMenu === "mic"}
+            onToggleMenu={() => setOpenMenu(openMenu === "mic" ? null : "mic")}
+            onCloseMenu={() => setOpenMenu(null)}
+          >
+            <ControlButton
+              icon={micEnabled ? "mic" : "mic_off"}
+              label={micEnabled ? "Micro" : "Micro tắt"}
+              active={micEnabled}
+              onClick={handleToggleMic}
+            />
+            {openMenu === "mic" && microphones.length > 1 && (
+              <DeviceMenu
+                devices={microphones}
+                selectedDeviceId={selectedMicrophone}
+                onSelect={async (id) => {
+                  await selectMicrophone(id);
+                  setOpenMenu(null);
+                }}
+              />
+            )}
+          </DeviceControlGroup>
+
+          {/* Camera toggle + device switcher */}
+          <DeviceControlGroup
+            menuOpen={openMenu === "cam"}
+            onToggleMenu={() => setOpenMenu(openMenu === "cam" ? null : "cam")}
+            onCloseMenu={() => setOpenMenu(null)}
+          >
+            <ControlButton
+              icon={videoEnabled ? "camera" : "camera_off"}
+              label={videoEnabled ? "Camera" : "Camera tắt"}
+              active={videoEnabled}
+              onClick={handleToggleCam}
+            />
+            {openMenu === "cam" && cameras.length > 1 && (
+              <DeviceMenu
+                devices={cameras}
+                selectedDeviceId={selectedCamera}
+                onSelect={async (id) => {
+                  await selectCamera(id);
+                  setOpenMenu(null);
+                }}
+              />
+            )}
+          </DeviceControlGroup>
+
+          <button onClick={handleLeaveRoom} className="ekyc-room-leave-btn">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
             </svg>
@@ -195,6 +310,34 @@ function EkycMeetingRoomInner({
 }
 
 // ── Internal sub-components ──────────────────────────────────
+
+/**
+ * CameraOffOverlay – covers the video tile when camera is disabled.
+ */
+function CameraOffOverlay() {
+  return (
+    <div className="ekyc-room-cam-off-overlay">
+      <div className="ekyc-room-cam-off-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M12 18.75H4.5a2.25 2.25 0 01-2.25-2.25V9m13.5 0V7.5a2.25 2.25 0 00-2.25-2.25H5.25M3 3l18 18" />
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * MicStatusBadge – small muted-mic icon badge overlaid on the video tile.
+ */
+function MicStatusBadge() {
+  return (
+    <div className="ekyc-room-mic-badge">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 003-3V4.5a3 3 0 10-6 0v8.25M3 3l18 18" />
+      </svg>
+    </div>
+  );
+}
 
 /**
  * VideoTile – renders a MediaStream into a <video> element.
@@ -264,15 +407,29 @@ function VideoPlaceholder({
 function ControlButton({
   icon,
   label,
+  active = true,
+  onClick,
 }: {
   icon: string;
   label: string;
+  active?: boolean;
+  onClick?: () => void;
 }) {
+  const btnClass = [
+    "ekyc-room-control-btn",
+    active ? "ekyc-room-control-btn--active" : "ekyc-room-control-btn--inactive",
+  ].join(" ");
+
   return (
-    <button title={label} className="ekyc-room-control-btn">
+    <button title={label} className={btnClass} onClick={onClick}>
       {icon === "mic" && (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 003-3V4.5a3 3 0 10-6 0v8.25a3 3 0 003 3z" />
+        </svg>
+      )}
+      {icon === "mic_off" && (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 003-3V4.5a3 3 0 10-6 0v8.25M3 3l18 18" />
         </svg>
       )}
       {icon === "camera" && (
@@ -280,7 +437,86 @@ function ControlButton({
           <path d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9.75a2.25 2.25 0 002.25-2.25V7.5a2.25 2.25 0 00-2.25-2.25H4.5A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z" />
         </svg>
       )}
-      {label}
+      {icon === "camera_off" && (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M12 18.75H4.5a2.25 2.25 0 01-2.25-2.25V9m13.5 0V7.5a2.25 2.25 0 00-2.25-2.25H5.25M3 3l18 18" />
+        </svg>
+      )}
     </button>
+  );
+}
+
+/**
+ * DeviceControlGroup – wraps a ControlButton with a dropdown arrow and device menu.
+ */
+function DeviceControlGroup({
+  children,
+  menuOpen,
+  onToggleMenu,
+  onCloseMenu,
+}: {
+  children: React.ReactNode;
+  menuOpen: boolean;
+  onToggleMenu: () => void;
+  onCloseMenu: () => void;
+}) {
+  const groupRef = useRef<HTMLDivElement>(null);
+
+  // Close on outside click
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (groupRef.current && !groupRef.current.contains(e.target as Node)) {
+        onCloseMenu();
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [menuOpen, onCloseMenu]);
+
+  return (
+    <div className="ekyc-room-device-group" ref={groupRef}>
+      {children}
+      <button
+        className="ekyc-room-device-arrow"
+        onClick={onToggleMenu}
+        title="Chọn thiết bị"
+      >
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
+          <path d="M2 7l3-4 3 4H2z" />
+        </svg>
+      </button>
+    </div>
+  );
+}
+
+/**
+ * DeviceMenu – popover list of available devices.
+ */
+function DeviceMenu({
+  devices,
+  selectedDeviceId,
+  onSelect,
+}: {
+  devices: { deviceId: string; label: string }[];
+  selectedDeviceId: string | null;
+  onSelect: (deviceId: string) => void;
+}) {
+  return (
+    <div className="ekyc-room-device-menu">
+      {devices.map((device, idx) => (
+        <button
+          key={device.deviceId}
+          className={`ekyc-room-device-menu-item${device.deviceId === selectedDeviceId ? " ekyc-room-device-menu-item--selected" : ""
+            }`}
+          onClick={() => onSelect(device.deviceId)}
+        >
+          <span className="ekyc-room-device-menu-check">
+            {device.deviceId === selectedDeviceId ? "✓" : ""}
+          </span>
+          {device.label || `Thiết bị ${idx + 1}`}
+        </button>
+      ))}
+    </div>
   );
 }
