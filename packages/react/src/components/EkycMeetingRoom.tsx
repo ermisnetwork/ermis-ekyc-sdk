@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
 import type { JoinWithCodeResponse } from "../types/meeting.types";
 import { ErmisService } from "ermis-ekyc-sdk";
 import { useEkycMeetingConfig } from "../EkycMeetingProvider";
@@ -35,12 +35,25 @@ export interface EkycMeetingRoomProps {
   guestLabel?: string;
 }
 
+/** Ref handle exposed by EkycMeetingRoom for external access */
+export interface EkycMeetingRoomRef {
+  /** Ref to the remote participant's <video> element (for eKYC capture) */
+  remoteVideoRef: React.RefObject<HTMLVideoElement | null>;
+}
+
 /**
  * EkycMeetingRoom – outer wrapper that provides the ErmisClassroomProvider.
  *
- * On mount: authenticate(authId) → joinRoom(ermisRoomCode)
+ * Accepts a `ref` to expose `remoteVideoRef` for use with `EkycActionPanel`.
+ *
+ * @example
+ * ```tsx
+ * const roomRef = useRef<EkycMeetingRoomRef>(null);
+ * <EkycMeetingRoom ref={roomRef} ... />
+ * <EkycActionPanel remoteVideoRef={roomRef.current?.remoteVideoRef} />
+ * ```
  */
-export function EkycMeetingRoom(props: EkycMeetingRoomProps) {
+export const EkycMeetingRoom = forwardRef<EkycMeetingRoomRef, EkycMeetingRoomProps>(function EkycMeetingRoom(props, ref) {
   const { meetingHostUrl, meetingNodeUrl } = useEkycMeetingConfig();
   const { className } = props;
   const rootClass = ["ekyc-room-root", className].filter(Boolean).join(" ");
@@ -59,15 +72,15 @@ export function EkycMeetingRoom(props: EkycMeetingRoomProps) {
   return (
     <div className={rootClass}>
       <ErmisClassroomProvider config={config}>
-        <EkycMeetingRoomInner {...props} />
+        <EkycMeetingRoomInner ref={ref} {...props} />
       </ErmisClassroomProvider>
     </div>
   );
-}
+});
 
 // ── Inner component (inside ErmisClassroomProvider) ─────────
 
-function EkycMeetingRoomInner({
+const EkycMeetingRoomInner = forwardRef<EkycMeetingRoomRef, EkycMeetingRoomProps>(function EkycMeetingRoomInner({
   localStream,
   meetingData,
   onLeave,
@@ -75,7 +88,7 @@ function EkycMeetingRoomInner({
   leaveButtonLabel = "Rời phòng",
   hostLabel = "Thẩm định viên (HOST)",
   guestLabel = "Khách hàng (GUEST)",
-}: EkycMeetingRoomProps) {
+}, ref) {
   const {
     client,
     authenticate,
@@ -173,6 +186,15 @@ function EkycMeetingRoomInner({
   // Convert remote streams Map to array for rendering
   const remoteStreamEntries = Array.from(remoteStreams.entries());
 
+  // Ref to remote (GUEST) video element for eKYC capture
+  const remoteVideoRef = useRef<HTMLVideoElement>(null);
+  const isHost = meetingData.registrant.role === "HOST";
+
+  // Expose remoteVideoRef to consumer via ref
+  useImperativeHandle(ref, () => ({
+    remoteVideoRef,
+  }), []);
+
   return (
     <>
       {/* ── Status indicator ──────────────────────────────── */}
@@ -187,8 +209,6 @@ function EkycMeetingRoomInner({
       <div className="ekyc-room-main">
         <div className="ekyc-room-grid">
           {(() => {
-            const isHost = meetingData.registrant.role === "HOST";
-
             // Local tile
             const localTile = (
               <div
@@ -215,7 +235,7 @@ function EkycMeetingRoomInner({
                     key={userId}
                     className={`ekyc-room-tile ${isHost ? "ekyc-room-tile--main" : "ekyc-room-tile--pip"}`}
                   >
-                    <VideoTile stream={stream} />
+                    <VideoTile ref={isHost ? remoteVideoRef : undefined} stream={stream} />
                     {isRemoteCamOff && <CameraOffOverlay />}
                     {isRemoteMicOff && <MicStatusBadge />}
                     <span className="ekyc-room-tile-label">
@@ -307,7 +327,7 @@ function EkycMeetingRoomInner({
       )}
     </>
   );
-}
+});
 
 // ── Internal sub-components ──────────────────────────────────
 
@@ -341,17 +361,17 @@ function MicStatusBadge() {
 
 /**
  * VideoTile – renders a MediaStream into a <video> element.
- */
-function VideoTile({
-  stream,
-  muted = false,
-  mirrored = false,
-}: {
+        * Supports forwardRef to expose the <video> DOM element for frame capture.
+          */
+const VideoTile = forwardRef<HTMLVideoElement, {
   stream: MediaStream | null;
   muted?: boolean;
   mirrored?: boolean;
-}) {
+}>(function VideoTile({ stream, muted = false, mirrored = false }, ref) {
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Expose the <video> element to parent via forwardRef
+  useImperativeHandle(ref, () => videoRef.current as HTMLVideoElement);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -377,7 +397,7 @@ function VideoTile({
       className={`ekyc-room-video${mirrored ? " ekyc-room-video--mirrored" : ""}`}
     />
   );
-}
+});
 
 function VideoPlaceholder({
   label,

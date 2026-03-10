@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useMemo } from "react";
-import { ErmisService } from "ermis-ekyc-sdk";
+import { ErmisService, EkycService } from "ermis-ekyc-sdk";
 
 // ============================================================
 // Ekyc Meeting Context
@@ -20,23 +20,27 @@ const EkycMeetingContext = createContext<EkycMeetingConfig>({
 // ── Provider ─────────────────────────────────────────────────
 
 export interface EkycMeetingProviderProps extends EkycMeetingConfig {
-  /** Base URL of the Ermis eKYC API – used to initialize ErmisService singleton */
+  /** Base URL of the Ermis management API (meeting/registrant/session) */
+  ermisApiUrl: string;
+  /** Base URL of the eKYC API (OCR, Liveness, Face Match) */
   ekycApiUrl: string;
+  /** API key for eKYC API authentication */
+  ekycApiKey: string;
   children: React.ReactNode;
 }
 
 /**
- * Initializes `ErmisService` and wraps child components.
+ * Initializes `ErmisService` and `EkycService` singletons, then wraps child components.
  *
  * Must be rendered **before** any `EkycMeetingPreview` or `EkycMeetingRoom`.
- * Ensures the singleton is ready so child components can safely call
- * `ErmisService.getInstance()`.
  *
  * @example
  * ```tsx
  * <EkycMeetingProvider
- *   ekycApiUrl="https://api-ekyc.ermis.network"
- *   meetingServerUrl="https://meet.ermis.network"
+ *   ermisApiUrl="https://api-ekyc.ermis.network"
+ *   ekycApiUrl="https://ekyc-api.ktssolution.com/api/ekyc"
+ *   ekycApiKey="your-api-key"
+ *   meetingHostUrl="https://meet.ermis.network"
  *   meetingNodeUrl="https://node.ermis.network"
  * >
  *   <EkycMeetingPreview joinCode="ABC123" />
@@ -44,15 +48,26 @@ export interface EkycMeetingProviderProps extends EkycMeetingConfig {
  * ```
  */
 export function EkycMeetingProvider({
+  ermisApiUrl,
   ekycApiUrl,
+  ekycApiKey,
   meetingHostUrl,
   meetingNodeUrl,
   children,
 }: EkycMeetingProviderProps) {
-  // Initialize ErmisService singleton (idempotent – safe to call multiple times)
+  // Initialize ErmisService singleton (management API)
   useMemo(() => {
-    ErmisService.getInstance({ baseUrl: ekycApiUrl });
-  }, [ekycApiUrl]);
+    ErmisService.getInstance({ baseUrl: ermisApiUrl });
+  }, [ermisApiUrl]);
+
+  // Initialize EkycService singleton (OCR / Liveness / Face Match API)
+  useMemo(() => {
+    try {
+      EkycService.getInstance({ baseUrl: ekycApiUrl, apiKey: ekycApiKey });
+    } catch {
+      // Already initialized – singleton pattern, ignore
+    }
+  }, [ekycApiUrl, ekycApiKey]);
 
   const value = useMemo<EkycMeetingConfig>(
     () => ({ meetingHostUrl, meetingNodeUrl }),

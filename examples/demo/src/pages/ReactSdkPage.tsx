@@ -1,13 +1,17 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import "ermis-ekyc-react/styles.css";
 import {
   EkycMeetingProvider,
   EkycMeetingPreview,
   EkycMeetingRoom,
+  EkycActionPanel,
   type EkycPreviewJoinData,
+  type EkycMeetingRoomRef,
 } from "ermis-ekyc-react";
 
-const DEFAULT_EKYC_API = "https://api-ekyc.ermis.network";
+const DEFAULT_ERMIS_API = "https://api-ekyc.ermis.network";
+const DEFAULT_EKYC_API = "https://ekyc-api.ktssolution.com/api/ekyc";
+const DEFAULT_EKYC_API_KEY = "dev-key-123";
 const DEFAULT_MEETING_HOST = "https://ubuntu-server.trungdt.xyz:9937";
 const DEFAULT_MEETING_NODE = "https://ubuntu-server.trungdt.xyz:9900";
 
@@ -20,6 +24,7 @@ export function ReactSdkPage() {
   const [joinCode, setJoinCode] = useState("");
   const [view, setView] = useState<View>("input");
   const [roomData, setRoomData] = useState<EkycPreviewJoinData | null>(null);
+  const roomRef = useRef<EkycMeetingRoomRef>(null);
 
   const handleStartPreview = useCallback(() => {
     if (joinCode.trim()) {
@@ -83,7 +88,9 @@ export function ReactSdkPage() {
       {/* ── Preview + Room wrapped in Provider ─────────────── */}
       {view !== "input" && (
         <EkycMeetingProvider
+          ermisApiUrl={DEFAULT_ERMIS_API}
           ekycApiUrl={DEFAULT_EKYC_API}
+          ekycApiKey={DEFAULT_EKYC_API_KEY}
           meetingHostUrl={DEFAULT_MEETING_HOST}
           meetingNodeUrl={DEFAULT_MEETING_NODE}
         >
@@ -110,13 +117,34 @@ export function ReactSdkPage() {
             </>
           )}
 
-          {view === "room" && roomData && (
-            <EkycMeetingRoom
-              localStream={roomData.localStream}
-              meetingData={roomData.meetingData}
-              onLeave={handleLeave}
-            />
-          )}
+          {view === "room" && roomData && (() => {
+            const isHost = roomData.meetingData.registrant.role === "HOST";
+            return (
+              <div style={{
+                position: "fixed",
+                inset: 0,
+                zIndex: 9999,
+                background: "#0f172a",
+                display: "flex",
+              }}>
+                <EkycMeetingRoom
+                  ref={roomRef}
+                  localStream={roomData.localStream}
+                  meetingData={roomData.meetingData}
+                  onLeave={handleLeave}
+                />
+                {isHost && roomRef.current && (
+                  <EkycActionPanel
+                    remoteVideoRef={roomRef.current.remoteVideoRef}
+                    onOcrComplete={(r) => console.log("[Demo] OCR:", r)}
+                    onLivenessComplete={(r) => console.log("[Demo] Liveness:", r)}
+                    onFaceMatchComplete={(r) => console.log("[Demo] FaceMatch:", r)}
+                    onEkycComplete={(r) => console.log("[Demo] eKYC complete:", r)}
+                  />
+                )}
+              </div>
+            );
+          })()}
         </EkycMeetingProvider>
       )}
     </>

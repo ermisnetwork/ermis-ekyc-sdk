@@ -19,7 +19,12 @@ export {
 export {
   EkycMeetingRoom,
   type EkycMeetingRoomProps,
+  type EkycMeetingRoomRef,
 } from "./components/EkycMeetingRoom";
+export {
+  EkycActionPanel,
+  type EkycActionPanelProps,
+} from "./components/EkycActionPanel";
 
 // ── Hooks ───────────────────────────────────────────────────
 export {

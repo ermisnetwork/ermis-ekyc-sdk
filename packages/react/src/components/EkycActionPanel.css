@@ -1,0 +1,366 @@
+/* ============================================================
+   EkycActionPanel – Styles
+   ============================================================ */
+
+.ekyc-panel {
+  display: flex;
+  flex-direction: column;
+  width: 360px;
+  max-height: 100%;
+  background: rgba(15, 23, 42, 0.95);
+  border-left: 1px solid rgba(148, 163, 184, 0.1);
+  backdrop-filter: blur(12px);
+  overflow-y: auto;
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+.ekyc-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+  flex-shrink: 0;
+}
+
+.ekyc-panel-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.ekyc-panel-reset-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: rgba(148, 163, 184, 0.1);
+  color: #94a3b8;
+  font-size: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.ekyc-panel-reset-btn:hover {
+  background: rgba(148, 163, 184, 0.2);
+  color: #e2e8f0;
+}
+
+.ekyc-panel-body {
+  flex: 1;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+}
+
+/* ── Step Section ──────────────────────────────────────── */
+
+.ekyc-panel-step-section {
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color 0.3s;
+}
+
+.ekyc-panel-step-section--done {
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.ekyc-panel-step-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ekyc-panel-step-num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(99, 102, 241, 0.15);
+  color: #818cf8;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ekyc-panel-step-title {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #e2e8f0;
+  flex: 1;
+}
+
+.ekyc-panel-step-badge {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ekyc-panel-step-badge--pass {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+}
+
+.ekyc-panel-step-badge--fail {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+}
+
+.ekyc-panel-desc {
+  margin: 0;
+  font-size: 11px;
+  color: #94a3b8;
+  line-height: 1.4;
+}
+
+/* ── Document Type Selector ────────────────────────────── */
+
+.ekyc-panel-doc-types {
+  display: flex;
+  gap: 6px;
+}
+
+.ekyc-panel-doc-btn {
+  flex: 1;
+  padding: 6px;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 6px;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.ekyc-panel-doc-btn:hover {
+  background: rgba(148, 163, 184, 0.08);
+  color: #e2e8f0;
+}
+
+.ekyc-panel-doc-btn--active {
+  background: rgba(99, 102, 241, 0.15);
+  border-color: rgba(99, 102, 241, 0.4);
+  color: #818cf8;
+}
+
+/* ── Captures ──────────────────────────────────────────── */
+
+.ekyc-panel-captures {
+  display: flex;
+  gap: 8px;
+}
+
+.ekyc-panel-capture-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ekyc-panel-capture-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.ekyc-panel-capture-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px;
+  border: 1px dashed rgba(148, 163, 184, 0.2);
+  border-radius: 8px;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.ekyc-panel-capture-btn:hover {
+  border-color: rgba(99, 102, 241, 0.4);
+  background: rgba(99, 102, 241, 0.05);
+  color: #818cf8;
+}
+
+.ekyc-panel-thumb-wrap {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.ekyc-panel-thumb {
+  width: 100%;
+  display: block;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+}
+
+.ekyc-panel-recapture-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.ekyc-panel-thumb-wrap:hover .ekyc-panel-recapture-btn {
+  opacity: 1;
+}
+
+/* ── Buttons ───────────────────────────────────────────── */
+
+.ekyc-panel-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  background: #6366f1;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.ekyc-panel-action-btn:hover {
+  background: #4f46e5;
+}
+
+.ekyc-panel-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Result Table ──────────────────────────────────────── */
+
+.ekyc-panel-result-table {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.06);
+}
+
+.ekyc-panel-result-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 8px;
+  background: rgba(15, 23, 42, 0.5);
+  gap: 8px;
+}
+
+.ekyc-panel-result-row:nth-child(even) {
+  background: rgba(15, 23, 42, 0.3);
+}
+
+.ekyc-panel-result-row-label {
+  font-size: 10px;
+  color: #64748b;
+  flex-shrink: 0;
+}
+
+.ekyc-panel-result-row-value {
+  font-size: 10px;
+  color: #cbd5e1;
+  text-align: right;
+  word-break: break-word;
+}
+
+.ekyc-panel-result-row-value--pass {
+  color: #34d399;
+}
+
+.ekyc-panel-result-row-value--fail {
+  color: #f87171;
+}
+
+.ekyc-panel-result-row-value--highlight {
+  color: #e2e8f0;
+  font-weight: 600;
+}
+
+/* ── Error ─────────────────────────────────────────────── */
+
+.ekyc-panel-error-msg {
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  font-size: 11px;
+}
+
+/* ── Spinner ───────────────────────────────────────────── */
+
+.ekyc-panel-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: ekyc-spin 0.6s linear infinite;
+}
+
+@keyframes ekyc-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ── Mobile responsive ─────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .ekyc-panel {
+    width: 100%;
+    max-height: 50vh;
+    border-left: none;
+    border-top: 1px solid rgba(148, 163, 184, 0.1);
+  }
+}
