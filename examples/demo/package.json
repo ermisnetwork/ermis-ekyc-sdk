@@ -9,8 +9,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@ermisnetwork/ermis-classroom-react": "^2.3.22",
-    "@ermisnetwork/ermis-classroom-sdk": "^2.3.22",
     "ermis-ekyc-react": "file:../../packages/react",
     "ermis-ekyc-sdk": "file:../../",
     "react": "^18.3.1",

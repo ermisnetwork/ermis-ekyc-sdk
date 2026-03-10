@@ -1,18 +1,16 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import type { JoinWithCodeResponse } from "../types/meeting.types";
+import { ErmisService } from "ermis-ekyc-sdk";
+import { useEkycMeetingConfig } from "../EkycMeetingProvider";
 import "./EkycMeetingRoom.css";
 import { ChannelName, ErmisClassroomProvider, useErmisClassroom } from "@ermisnetwork/ermis-classroom-react";
 import { QualityLevel } from "@ermisnetwork/ermis-classroom-sdk";
 
 // ============================================================
-// EkycMeetingRoom – Default placeholder for the meeting room UI
+// EkycMeetingRoom – Meeting room UI with live video streams
 // ============================================================
 
 export interface EkycMeetingRoomProps {
-  /** Meeting host URL (from provider config) */
-  meetingHostUrl: string;
-  /** Meeting node URL (from provider config) */
-  meetingNodeUrl: string;
   /** Local media stream from preview (camera + mic guaranteed) */
   localStream: MediaStream;
   /** Typed data returned from `joinWithCode` API */
@@ -26,8 +24,6 @@ export interface EkycMeetingRoomProps {
 
   /** Show the bottom control bar (mic, camera, share, leave). @default true */
   showControls?: boolean;
-  /** Show the share screen button in controls. @default true */
-  showShareScreen?: boolean;
 
   // ── Custom labels ────────────────────────────────────────
 
@@ -45,7 +41,8 @@ export interface EkycMeetingRoomProps {
  * On mount: authenticate(authId) → joinRoom(ermisRoomCode)
  */
 export function EkycMeetingRoom(props: EkycMeetingRoomProps) {
-  const { meetingHostUrl, meetingNodeUrl, className } = props;
+  const { meetingHostUrl, meetingNodeUrl } = useEkycMeetingConfig();
+  const { className } = props;
   const rootClass = ["ekyc-room-root", className].filter(Boolean).join(" ");
 
   const config = {
@@ -71,21 +68,27 @@ export function EkycMeetingRoom(props: EkycMeetingRoomProps) {
 // ── Inner component (inside ErmisClassroomProvider) ─────────
 
 function EkycMeetingRoomInner({
-  meetingHostUrl,
-  meetingNodeUrl,
   localStream,
   meetingData,
   onLeave,
   showControls = true,
-  showShareScreen = true,
   leaveButtonLabel = "Rời phòng",
   hostLabel = "Thẩm định viên (HOST)",
   guestLabel = "Khách hàng (GUEST)",
 }: EkycMeetingRoomProps) {
-  const { client, authenticate, joinRoom } = useErmisClassroom();
+  const {
+    client,
+    authenticate,
+    joinRoom,
+    remoteStreams,
+    localStream: sdkLocalStream,
+  } = useErmisClassroom();
 
   const [roomStatus, setRoomStatus] = useState<"connecting" | "connected" | "error">("connecting");
   const [roomError, setRoomError] = useState<string | null>(null);
+
+  // Use SDK local stream when available, fall back to preview localStream
+  const activeLocalStream = sdkLocalStream;
 
   // ── On mount: wait for client → authenticate → joinRoom ──
   useEffect(() => {
@@ -93,7 +96,7 @@ function EkycMeetingRoomInner({
 
     const { registrant, meeting } = meetingData;
 
-    const connectToRoom = async () => {
+    const joinToRoom = async () => {
       try {
         setRoomStatus("connecting");
         setRoomError(null);
@@ -102,7 +105,15 @@ function EkycMeetingRoomInner({
         await authenticate(registrant.authId);
 
         // Step 2: Join room with ermisRoomCode
-        await joinRoom(meeting.ermisRoomCode);
+        await joinRoom(meeting.ermisRoomCode, localStream);
+
+        // Step 3: Set token for SDK core from meetingData
+        const ermisService = ErmisService.getInstance();
+        ermisService.setToken(meetingData.meetingToken);
+
+        // Step 4: Fetch registrants after successful join
+        const registrants = await ermisService.meetings.getRegistrants(meeting._id);
+        console.log("[EkycMeetingRoom] Registrants:", registrants);
 
         setRoomStatus("connected");
       } catch (err: unknown) {
@@ -113,8 +124,11 @@ function EkycMeetingRoomInner({
       }
     };
 
-    connectToRoom();
-  }, [client]); // eslint-disable-line react-hooks/exhaustive-deps
+    joinToRoom();
+  }, [client, authenticate, joinRoom, localStream]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Convert remote streams Map to array for rendering
+  const remoteStreamEntries = Array.from(remoteStreams.entries());
 
   return (
     <>
@@ -128,10 +142,38 @@ function EkycMeetingRoomInner({
 
       {/* ── Main content area ─────────────────────────────── */}
       <div className="ekyc-room-main">
-        {/* Placeholder video grid */}
         <div className="ekyc-room-grid">
-          <VideoPlaceholder label={hostLabel} color="#6366f1" />
-          <VideoPlaceholder label={guestLabel} color="#8b5cf6" />
+          {/* ── Local video ──────────────────────────────── */}
+          <div className="ekyc-room-tile">
+            <VideoTile
+              stream={activeLocalStream}
+              muted
+              mirrored
+            />
+            <span className="ekyc-room-tile-label">
+              {meetingData.registrant.role === "HOST" ? hostLabel : guestLabel} (Bạn)
+            </span>
+          </div>
+
+          {/* ── Remote videos ────────────────────────────── */}
+          {remoteStreamEntries.map(([userId, stream]) => (
+            <div key={userId} className="ekyc-room-tile">
+              <VideoTile stream={stream} />
+              <span className="ekyc-room-tile-label">
+                {meetingData.registrant.role === "HOST" ? guestLabel : hostLabel}
+              </span>
+            </div>
+          ))}
+
+          {/* ── Placeholder when no remote streams yet ──── */}
+          {remoteStreamEntries.length === 0 && (
+            <div className="ekyc-room-tile">
+              <VideoPlaceholder
+                label={meetingData.registrant.role === "HOST" ? guestLabel : hostLabel}
+                color="#8b5cf6"
+              />
+            </div>
+          )}
         </div>
       </div>
 
@@ -140,9 +182,6 @@ function EkycMeetingRoomInner({
         <div className="ekyc-room-controls">
           <ControlButton icon="mic" label="Micro" />
           <ControlButton icon="camera" label="Camera" />
-          {showShareScreen && (
-            <ControlButton icon="share" label="Chia sẻ MH" />
-          )}
           <button onClick={onLeave} className="ekyc-room-leave-btn">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
@@ -151,29 +190,51 @@ function EkycMeetingRoomInner({
           </button>
         </div>
       )}
-
-      {/* ── Raw JSON data ─────────────────────────────────── */}
-      <pre className="ekyc-room-debug-pre">
-        {JSON.stringify(
-          {
-            meetingHostUrl,
-            meetingNodeUrl,
-            hasLocalStream: localStream != null,
-            localStreamTracks: localStream
-              ?.getTracks()
-              .map((t) => ({ kind: t.kind, label: t.label, enabled: t.enabled })),
-            meetingData,
-            roomStatus,
-          },
-          null,
-          2,
-        )}
-      </pre>
     </>
   );
 }
 
 // ── Internal sub-components ──────────────────────────────────
+
+/**
+ * VideoTile – renders a MediaStream into a <video> element.
+ */
+function VideoTile({
+  stream,
+  muted = false,
+  mirrored = false,
+}: {
+  stream: MediaStream | null;
+  muted?: boolean;
+  mirrored?: boolean;
+}) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (stream) {
+      video.srcObject = stream;
+    } else {
+      video.srcObject = null;
+    }
+
+    return () => {
+      video.srcObject = null;
+    };
+  }, [stream]);
+
+  return (
+    <video
+      ref={videoRef}
+      autoPlay
+      playsInline
+      muted={muted}
+      className={`ekyc-room-video${mirrored ? " ekyc-room-video--mirrored" : ""}`}
+    />
+  );
+}
 
 function VideoPlaceholder({
   label,
@@ -217,11 +278,6 @@ function ControlButton({
       {icon === "camera" && (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9.75a2.25 2.25 0 002.25-2.25V7.5a2.25 2.25 0 00-2.25-2.25H4.5A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z" />
-        </svg>
-      )}
-      {icon === "share" && (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M9 8.25H7.5a2.25 2.25 0 00-2.25 2.25v9a2.25 2.25 0 002.25 2.25h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25H15m0-3l-3-3m0 0l-3 3m3-3v11.25" />
         </svg>
       )}
       {label}

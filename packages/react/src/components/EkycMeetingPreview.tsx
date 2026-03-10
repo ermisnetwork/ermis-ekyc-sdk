@@ -11,8 +11,6 @@ import "./EkycMeetingPreview.css";
 
 /** Data passed from Preview to Room when user clicks "Join". */
 export interface EkycPreviewJoinData {
-  meetingHostUrl: string;
-  meetingNodeUrl: string;
   /** Local stream – guaranteed non-null (camera + mic required to join) */
   localStream: MediaStream;
   meetingData: JoinWithCodeResponse;
@@ -176,12 +174,10 @@ export function EkycMeetingPreview({
   const handleJoin = useCallback(() => {
     if (!meetingData || !stream) return;
     onJoinMeeting?.({
-      meetingHostUrl,
-      meetingNodeUrl,
       localStream: stream,
       meetingData,
     });
-  }, [onJoinMeeting, meetingHostUrl, meetingNodeUrl, stream, meetingData]);
+  }, [onJoinMeeting, stream, meetingData]);
 
   const rootClass = ["ekyc-preview-root", className].filter(Boolean).join(" ");
 

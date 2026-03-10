@@ -112,8 +112,6 @@ export function ReactSdkPage() {
 
           {view === "room" && roomData && (
             <EkycMeetingRoom
-              meetingHostUrl={roomData.meetingHostUrl}
-              meetingNodeUrl={roomData.meetingNodeUrl}
               localStream={roomData.localStream}
               meetingData={roomData.meetingData}
               onLeave={handleLeave}

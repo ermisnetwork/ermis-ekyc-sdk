@@ -39,8 +39,8 @@
     "react-dom": "^18.0.0"
   },
   "dependencies": {
-    "@ermisnetwork/ermis-classroom-sdk": "^2.3.15",
-    "@ermisnetwork/ermis-classroom-react": "^2.3.15"
+    "@ermisnetwork/ermis-classroom-sdk": "2.3.15",
+    "@ermisnetwork/ermis-classroom-react": "2.3.15"
   },
   "devDependencies": {
     "@types/react": "^18.3.12",
@@ -48,8 +48,8 @@
     "ermis-ekyc-sdk": "file:../../",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "@ermisnetwork/ermis-classroom-sdk": "^2.3.15",
-    "@ermisnetwork/ermis-classroom-react": "^2.3.15",
+    "@ermisnetwork/ermis-classroom-sdk": "2.3.15",
+    "@ermisnetwork/ermis-classroom-react": "2.3.15",
     "tsup": "^8.0.0",
     "typescript": "^5.3.0"
   },

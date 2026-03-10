@@ -61,6 +61,42 @@
   max-width: 900px;
 }
 
+/* ── Video Tiles ───────────────────────────────────────── */
+
+.ekyc-room-tile {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: 16px;
+  background: #1e293b;
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  overflow: hidden;
+}
+
+.ekyc-room-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  background: #000;
+}
+
+.ekyc-room-video--mirrored {
+  transform: scaleX(-1);
+}
+
+.ekyc-room-tile-label {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #e2e8f0;
+  font-size: 12px;
+  font-weight: 500;
+  backdrop-filter: blur(4px);
+}
+
 .ekyc-room-placeholder {
   aspect-ratio: 16 / 9;
   border-radius: 16px;
