@@ -82,6 +82,24 @@ console.log(result.faceMatch); // FaceMatchResponse
 
 ---
 
+## React UI SDK (`ermis-ekyc-react`)
+
+A full-featured React component library for eKYC meeting sessions:
+
+- 📹 **EkycMeetingPreview** – Camera/mic testing + join flow
+- 🎥 **EkycMeetingRoom** – Video meeting with `forwardRef` for composable layouts
+- 📋 **EkycActionPanel** – Detachable 3-step eKYC panel (OCR → Liveness → Face Match)
+- 🌐 **i18n** – Built-in Vietnamese/English locales, custom locale support
+- 🎨 **CSS Theming** – 20+ CSS custom properties for full visual customization
+
+```bash
+npm install ermis-ekyc-react ermis-ekyc-sdk
+```
+
+👉 See full documentation: [packages/react/README.md](packages/react/README.md)
+
+---
+
 ## API Reference
 
 ### Initialization
@@ -287,25 +305,42 @@ The demo app will start at `http://localhost:3001`. Changes to SDK source files 
 ## Project Structure
 
 ```
-src/
-├── index.ts                  # Entry point, re-exports
-├── EkycService.ts            # Singleton SDK + startEkycFlow()
-├── types/
-│   └── index.ts              # Interfaces, types & DocumentType enum
-├── errors/
-│   ├── EkycError.ts          # Custom error class + error codes
-│   └── errorHandler.ts       # Centralized error handler
-├── http/
-│   └── httpClient.ts         # Axios instance + interceptors
-├── services/
-│   ├── ocrService.ts         # OCR API service
-│   ├── livenessService.ts    # Liveness API service
-│   └── faceMatchService.ts   # Face Match API service
-└── utils/
-    └── base64.ts             # base64 to Blob conversion utilities
-
+packages/
+├── sdk/                          # Core eKYC SDK
+│   └── src/
+│       ├── index.ts              # Entry point, re-exports
+│       ├── EkycService.ts        # Singleton SDK + startEkycFlow()
+│       ├── types/
+│       │   └── index.ts          # Interfaces, types & DocumentType enum
+│       ├── errors/
+│       │   ├── EkycError.ts      # Custom error class + error codes
+│       │   └── errorHandler.ts   # Centralized error handler
+│       ├── http/
+│       │   └── httpClient.ts     # Axios instance + interceptors
+│       ├── services/
+│       │   ├── ocrService.ts     # OCR API service
+│       │   ├── livenessService.ts# Liveness API service
+│       │   └── faceMatchService.ts# Face Match API service
+│       └── utils/
+│           └── base64.ts         # base64 to Blob conversion utilities
+│
+├── react/                        # React UI SDK
+│   └── src/
+│       ├── index.ts              # Entry point, re-exports
+│       ├── EkycMeetingProvider.tsx# Provider (config + locale context)
+│       ├── locale/               # i18n locale system
+│       │   ├── types.ts          # EkycLocale interface
+│       │   ├── vi.ts             # Vietnamese (default)
+│       │   └── en.ts             # English
+│       ├── components/
+│       │   ├── EkycMeetingPreview.tsx  # Camera/mic preview
+│       │   ├── EkycMeetingRoom.tsx     # Video room (forwardRef)
+│       │   └── EkycActionPanel.tsx     # 3-step eKYC panel
+│       └── hooks/
+│           └── useMediaPreview.ts      # Camera/mic management
+│
 examples/
-└── demo/                     # React + Vite + Tailwind CSS demo app
+└── demo/                         # React + Vite demo app
 ```
 
 ## License

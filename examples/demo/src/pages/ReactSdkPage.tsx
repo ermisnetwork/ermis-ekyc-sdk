@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback } from "react";
 import "ermis-ekyc-react/styles.css";
 import {
   EkycMeetingProvider,
@@ -7,6 +7,7 @@ import {
   EkycActionPanel,
   type EkycPreviewJoinData,
   type EkycMeetingRoomRef,
+  enLocale,
 } from "ermis-ekyc-react";
 
 const DEFAULT_ERMIS_API = "https://api-ekyc.ermis.network";
@@ -24,7 +25,7 @@ export function ReactSdkPage() {
   const [joinCode, setJoinCode] = useState("");
   const [view, setView] = useState<View>("input");
   const [roomData, setRoomData] = useState<EkycPreviewJoinData | null>(null);
-  const roomRef = useRef<EkycMeetingRoomRef>(null);
+  const [roomHandle, setRoomHandle] = useState<EkycMeetingRoomRef | null>(null);
 
   const handleStartPreview = useCallback(() => {
     if (joinCode.trim()) {
@@ -93,6 +94,7 @@ export function ReactSdkPage() {
           ekycApiKey={DEFAULT_EKYC_API_KEY}
           meetingHostUrl={DEFAULT_MEETING_HOST}
           meetingNodeUrl={DEFAULT_MEETING_NODE}
+          locale={enLocale}
         >
           {view === "preview" && (
             <>
@@ -128,14 +130,14 @@ export function ReactSdkPage() {
                 display: "flex",
               }}>
                 <EkycMeetingRoom
-                  ref={roomRef}
+                  ref={setRoomHandle}
                   localStream={roomData.localStream}
                   meetingData={roomData.meetingData}
                   onLeave={handleLeave}
                 />
-                {isHost && roomRef.current && (
+                {isHost && roomHandle && (
                   <EkycActionPanel
-                    remoteVideoRef={roomRef.current.remoteVideoRef}
+                    remoteVideoRef={roomHandle.remoteVideoRef}
                     onOcrComplete={(r) => console.log("[Demo] OCR:", r)}
                     onLivenessComplete={(r) => console.log("[Demo] Liveness:", r)}
                     onFaceMatchComplete={(r) => console.log("[Demo] FaceMatch:", r)}

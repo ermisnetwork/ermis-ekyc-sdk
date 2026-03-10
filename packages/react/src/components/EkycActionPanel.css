@@ -1,5 +1,6 @@
 /* ============================================================
-   EkycActionPanel – Styles
+   EkycActionPanel – Styles with CSS custom properties
+   Consumer can override by setting --ekyc-* variables.
    ============================================================ */
 
 .ekyc-panel {
@@ -7,16 +8,18 @@
   flex-direction: column;
   width: 360px;
   max-height: 100%;
-  background: rgba(15, 23, 42, 0.95);
-  border-left: 1px solid rgba(148, 163, 184, 0.1);
+  background: var(--ekyc-bg-primary, rgba(15, 23, 42, 0.95));
+  border-left: 1px solid var(--ekyc-border, rgba(148, 163, 184, 0.1));
   backdrop-filter: blur(12px);
   overflow-y: auto;
-  font-family:
+  font-family: var(
+    --ekyc-font-family,
     "Inter",
     -apple-system,
     BlinkMacSystemFont,
     "Segoe UI",
-    sans-serif;
+    sans-serif
+  );
 }
 
 .ekyc-panel-header {
@@ -24,7 +27,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 14px 20px;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+  border-bottom: 1px solid var(--ekyc-border, rgba(148, 163, 184, 0.08));
   flex-shrink: 0;
 }
 
@@ -32,16 +35,16 @@
   margin: 0;
   font-size: 14px;
   font-weight: 600;
-  color: #e2e8f0;
+  color: var(--ekyc-text-primary, #e2e8f0);
 }
 
 .ekyc-panel-reset-btn {
   width: 28px;
   height: 28px;
   border: none;
-  border-radius: 6px;
-  background: rgba(148, 163, 184, 0.1);
-  color: #94a3b8;
+  border-radius: var(--ekyc-radius-sm, 6px);
+  background: var(--ekyc-bg-tertiary, rgba(148, 163, 184, 0.1));
+  color: var(--ekyc-text-secondary, #94a3b8);
   font-size: 15px;
   cursor: pointer;
   display: flex;
@@ -51,8 +54,8 @@
 }
 
 .ekyc-panel-reset-btn:hover {
-  background: rgba(148, 163, 184, 0.2);
-  color: #e2e8f0;
+  background: var(--ekyc-bg-hover, rgba(148, 163, 184, 0.2));
+  color: var(--ekyc-text-primary, #e2e8f0);
 }
 
 .ekyc-panel-body {
@@ -67,8 +70,8 @@
 /* ── Step Section ──────────────────────────────────────── */
 
 .ekyc-panel-step-section {
-  border: 1px solid rgba(148, 163, 184, 0.1);
-  border-radius: 10px;
+  border: 1px solid var(--ekyc-border, rgba(148, 163, 184, 0.1));
+  border-radius: var(--ekyc-radius, 10px);
   padding: 12px;
   display: flex;
   flex-direction: column;
@@ -77,7 +80,7 @@
 }
 
 .ekyc-panel-step-section--done {
-  border-color: rgba(16, 185, 129, 0.2);
+  border-color: var(--ekyc-success-border, rgba(16, 185, 129, 0.2));
 }
 
 .ekyc-panel-step-header {
@@ -90,8 +93,8 @@
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: rgba(99, 102, 241, 0.15);
-  color: #818cf8;
+  background: var(--ekyc-accent-bg, rgba(99, 102, 241, 0.15));
+  color: var(--ekyc-accent-text, #818cf8);
   font-size: 11px;
   font-weight: 700;
   display: flex;
@@ -104,7 +107,7 @@
   margin: 0;
   font-size: 12px;
   font-weight: 600;
-  color: #e2e8f0;
+  color: var(--ekyc-text-primary, #e2e8f0);
   flex: 1;
 }
 
@@ -121,19 +124,19 @@
 }
 
 .ekyc-panel-step-badge--pass {
-  background: rgba(16, 185, 129, 0.2);
-  color: #34d399;
+  background: var(--ekyc-success-bg, rgba(16, 185, 129, 0.2));
+  color: var(--ekyc-success, #34d399);
 }
 
 .ekyc-panel-step-badge--fail {
-  background: rgba(239, 68, 68, 0.2);
-  color: #f87171;
+  background: var(--ekyc-error-bg, rgba(239, 68, 68, 0.2));
+  color: var(--ekyc-error, #f87171);
 }
 
 .ekyc-panel-desc {
   margin: 0;
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--ekyc-text-secondary, #94a3b8);
   line-height: 1.4;
 }
 
@@ -147,10 +150,10 @@
 .ekyc-panel-doc-btn {
   flex: 1;
   padding: 6px;
-  border: 1px solid rgba(148, 163, 184, 0.15);
-  border-radius: 6px;
+  border: 1px solid var(--ekyc-border, rgba(148, 163, 184, 0.15));
+  border-radius: var(--ekyc-radius-sm, 6px);
   background: transparent;
-  color: #94a3b8;
+  color: var(--ekyc-text-secondary, #94a3b8);
   font-size: 11px;
   font-weight: 500;
   cursor: pointer;
@@ -158,14 +161,14 @@
 }
 
 .ekyc-panel-doc-btn:hover {
-  background: rgba(148, 163, 184, 0.08);
-  color: #e2e8f0;
+  background: var(--ekyc-bg-tertiary, rgba(148, 163, 184, 0.08));
+  color: var(--ekyc-text-primary, #e2e8f0);
 }
 
 .ekyc-panel-doc-btn--active {
-  background: rgba(99, 102, 241, 0.15);
-  border-color: rgba(99, 102, 241, 0.4);
-  color: #818cf8;
+  background: var(--ekyc-accent-bg, rgba(99, 102, 241, 0.15));
+  border-color: var(--ekyc-accent-border, rgba(99, 102, 241, 0.4));
+  color: var(--ekyc-accent-text, #818cf8);
 }
 
 /* ── Captures ──────────────────────────────────────────── */
@@ -185,7 +188,7 @@
 .ekyc-panel-capture-label {
   font-size: 10px;
   font-weight: 500;
-  color: #64748b;
+  color: var(--ekyc-text-muted, #64748b);
   text-transform: uppercase;
   letter-spacing: 0.3px;
 }
@@ -196,10 +199,10 @@
   justify-content: center;
   gap: 4px;
   padding: 8px;
-  border: 1px dashed rgba(148, 163, 184, 0.2);
-  border-radius: 8px;
+  border: 1px dashed var(--ekyc-border, rgba(148, 163, 184, 0.2));
+  border-radius: var(--ekyc-radius, 8px);
   background: transparent;
-  color: #94a3b8;
+  color: var(--ekyc-text-secondary, #94a3b8);
   font-size: 11px;
   font-weight: 500;
   cursor: pointer;
@@ -207,16 +210,16 @@
 }
 
 .ekyc-panel-capture-btn:hover {
-  border-color: rgba(99, 102, 241, 0.4);
-  background: rgba(99, 102, 241, 0.05);
-  color: #818cf8;
+  border-color: var(--ekyc-accent-border, rgba(99, 102, 241, 0.4));
+  background: var(--ekyc-accent-bg, rgba(99, 102, 241, 0.05));
+  color: var(--ekyc-accent-text, #818cf8);
 }
 
 .ekyc-panel-thumb-wrap {
   position: relative;
-  border-radius: 8px;
+  border-radius: var(--ekyc-radius, 8px);
   overflow: hidden;
-  border: 1px solid rgba(148, 163, 184, 0.1);
+  border: 1px solid var(--ekyc-border, rgba(148, 163, 184, 0.1));
 }
 
 .ekyc-panel-thumb {
@@ -258,8 +261,8 @@
   gap: 6px;
   padding: 8px 14px;
   border: none;
-  border-radius: 8px;
-  background: #6366f1;
+  border-radius: var(--ekyc-radius, 8px);
+  background: var(--ekyc-accent, #6366f1);
   color: #fff;
   font-size: 12px;
   font-weight: 600;
@@ -268,7 +271,7 @@
 }
 
 .ekyc-panel-action-btn:hover {
-  background: #4f46e5;
+  background: var(--ekyc-accent-hover, #4f46e5);
 }
 
 .ekyc-panel-action-btn:disabled {
@@ -282,9 +285,9 @@
   display: flex;
   flex-direction: column;
   gap: 1px;
-  border-radius: 6px;
+  border-radius: var(--ekyc-radius-sm, 6px);
   overflow: hidden;
-  border: 1px solid rgba(148, 163, 184, 0.06);
+  border: 1px solid var(--ekyc-border, rgba(148, 163, 184, 0.06));
 }
 
 .ekyc-panel-result-row {
@@ -292,37 +295,37 @@
   justify-content: space-between;
   align-items: center;
   padding: 5px 8px;
-  background: rgba(15, 23, 42, 0.5);
+  background: var(--ekyc-bg-result-row, rgba(15, 23, 42, 0.5));
   gap: 8px;
 }
 
 .ekyc-panel-result-row:nth-child(even) {
-  background: rgba(15, 23, 42, 0.3);
+  background: var(--ekyc-bg-result-row-alt, rgba(15, 23, 42, 0.3));
 }
 
 .ekyc-panel-result-row-label {
   font-size: 10px;
-  color: #64748b;
+  color: var(--ekyc-text-muted, #64748b);
   flex-shrink: 0;
 }
 
 .ekyc-panel-result-row-value {
   font-size: 10px;
-  color: #cbd5e1;
+  color: var(--ekyc-text-secondary, #cbd5e1);
   text-align: right;
   word-break: break-word;
 }
 
 .ekyc-panel-result-row-value--pass {
-  color: #34d399;
+  color: var(--ekyc-success, #34d399);
 }
 
 .ekyc-panel-result-row-value--fail {
-  color: #f87171;
+  color: var(--ekyc-error, #f87171);
 }
 
 .ekyc-panel-result-row-value--highlight {
-  color: #e2e8f0;
+  color: var(--ekyc-text-primary, #e2e8f0);
   font-weight: 600;
 }
 
@@ -330,10 +333,10 @@
 
 .ekyc-panel-error-msg {
   padding: 6px 10px;
-  border-radius: 6px;
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.15);
-  color: #f87171;
+  border-radius: var(--ekyc-radius-sm, 6px);
+  background: var(--ekyc-error-bg, rgba(239, 68, 68, 0.1));
+  border: 1px solid var(--ekyc-error-border, rgba(239, 68, 68, 0.15));
+  color: var(--ekyc-error, #f87171);
   font-size: 11px;
 }
 
@@ -361,6 +364,6 @@
     width: 100%;
     max-height: 50vh;
     border-left: none;
-    border-top: 1px solid rgba(148, 163, 184, 0.1);
+    border-top: 1px solid var(--ekyc-border, rgba(148, 163, 184, 0.1));
   }
 }

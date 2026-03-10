@@ -6,6 +6,8 @@ import {
   LivenessResponse,
   FaceMatchResponse,
 } from "ermis-ekyc-sdk";
+import { useEkycLocale } from "../EkycMeetingProvider";
+import type { EkycPanelLocale } from "../locale/types";
 import "./EkycActionPanel.css";
 
 // ============================================================
@@ -80,6 +82,8 @@ function captureFrame(video: HTMLVideoElement): Promise<Blob> {
 // ============================================================
 
 export function EkycActionPanel({ remoteVideoRef, onOcrComplete, onLivenessComplete, onFaceMatchComplete, onEkycComplete }: EkycActionPanelProps) {
+  const locale = useEkycLocale();
+  const t = locale.panel;
   const [docType, setDocType] = useState<DocumentType>(DocumentType.CCCD);
   const [images, setImages] = useState<CapturedImages>({});
   const [results, setResults] = useState<StepResults>({});
@@ -228,8 +232,8 @@ export function EkycActionPanel({ remoteVideoRef, onOcrComplete, onLivenessCompl
   return (
     <div className="ekyc-panel">
       <div className="ekyc-panel-header">
-        <h3 className="ekyc-panel-title">Xác minh eKYC</h3>
-        <button className="ekyc-panel-reset-btn" onClick={handleReset} title="Làm lại">
+        <h3 className="ekyc-panel-title">{t.title}</h3>
+        <button className="ekyc-panel-reset-btn" onClick={handleReset} title={t.reset}>
           ↺
         </button>
       </div>
@@ -241,16 +245,16 @@ export function EkycActionPanel({ remoteVideoRef, onOcrComplete, onLivenessCompl
         <div className={`ekyc-panel-step-section ${results.ocr ? "ekyc-panel-step-section--done" : ""}`}>
           <div className="ekyc-panel-step-header">
             <span className="ekyc-panel-step-num">1</span>
-            <h4 className="ekyc-panel-step-title">OCR – Giấy tờ tùy thân</h4>
+            <h4 className="ekyc-panel-step-title">{t.ocrTitle}</h4>
             {results.ocr && <span className="ekyc-panel-step-badge ekyc-panel-step-badge--pass">✓</span>}
           </div>
 
           {/* Doc type selector */}
           <div className="ekyc-panel-doc-types">
             {([
-              [DocumentType.CCCD, "CCCD"],
-              [DocumentType.PASSPORT, "Hộ chiếu"],
-              [DocumentType.GPLX, "GPLX"],
+              [DocumentType.CCCD, t.docCccd],
+              [DocumentType.PASSPORT, t.docPassport],
+              [DocumentType.GPLX, t.docGplx],
             ] as [DocumentType, string][]).map(([type, label]) => (
               <button
                 key={type}
@@ -275,27 +279,27 @@ export function EkycActionPanel({ remoteVideoRef, onOcrComplete, onLivenessCompl
           <div className="ekyc-panel-captures">
             {/* Front */}
             <div className="ekyc-panel-capture-item">
-              <span className="ekyc-panel-capture-label">Mặt trước</span>
+              <span className="ekyc-panel-capture-label">{t.frontSide}</span>
               {images.frontUrl ? (
                 <div className="ekyc-panel-thumb-wrap">
                   <img src={images.frontUrl} alt="Front" className="ekyc-panel-thumb" />
-                  <button className="ekyc-panel-recapture-btn" onClick={() => setImages((prev) => { if (prev.frontUrl) URL.revokeObjectURL(prev.frontUrl); return { ...prev, front: undefined, frontUrl: undefined }; })} title="Xoá ảnh">✕</button>
+                  <button className="ekyc-panel-recapture-btn" onClick={() => setImages((prev) => { if (prev.frontUrl) URL.revokeObjectURL(prev.frontUrl); return { ...prev, front: undefined, frontUrl: undefined }; })} title={t.clearImage}>✕</button>
                 </div>
               ) : (
-                <CaptureButton onClick={handleCaptureFront} label="Chụp" />
+                <CaptureButton onClick={handleCaptureFront} label={t.captureBtn} />
               )}
             </div>
             {/* Back (if needed) */}
             {needsBackSide && (
               <div className="ekyc-panel-capture-item">
-                <span className="ekyc-panel-capture-label">Mặt sau</span>
+                <span className="ekyc-panel-capture-label">{t.backSide}</span>
                 {images.backUrl ? (
                   <div className="ekyc-panel-thumb-wrap">
                     <img src={images.backUrl} alt="Back" className="ekyc-panel-thumb" />
-                    <button className="ekyc-panel-recapture-btn" onClick={() => setImages((prev) => { if (prev.backUrl) URL.revokeObjectURL(prev.backUrl); return { ...prev, back: undefined, backUrl: undefined }; })} title="Xoá ảnh">✕</button>
+                    <button className="ekyc-panel-recapture-btn" onClick={() => setImages((prev) => { if (prev.backUrl) URL.revokeObjectURL(prev.backUrl); return { ...prev, back: undefined, backUrl: undefined }; })} title={t.clearImage}>✕</button>
                   </div>
                 ) : (
-                  <CaptureButton onClick={handleCaptureBack} label="Chụp" />
+                  <CaptureButton onClick={handleCaptureBack} label={t.captureBtn} />
                 )}
               </div>
             )}
@@ -304,7 +308,7 @@ export function EkycActionPanel({ remoteVideoRef, onOcrComplete, onLivenessCompl
           {/* Call OCR button */}
           {canCallOcr && (
             <button className="ekyc-panel-action-btn" onClick={handleOcr} disabled={processing === "ocr"}>
-              {processing === "ocr" ? <><span className="ekyc-panel-spinner" /> Đang xử lý...</> : "Gửi OCR"}
+              {processing === "ocr" ? <><span className="ekyc-panel-spinner" /> {t.processing}</> : t.sendOcr}
             </button>
           )}
 
@@ -312,7 +316,7 @@ export function EkycActionPanel({ remoteVideoRef, onOcrComplete, onLivenessCompl
           {errors.ocr && <div className="ekyc-panel-error-msg">⚠️ {errors.ocr}</div>}
 
           {/* OCR Result */}
-          {results.ocr && <OcrResultDisplay data={results.ocr} />}
+          {results.ocr && <OcrResultDisplay data={results.ocr} t={t} />}
         </div>
 
         {/* ═══════════════════════════════════════════════════
@@ -321,7 +325,7 @@ export function EkycActionPanel({ remoteVideoRef, onOcrComplete, onLivenessCompl
         <div className={`ekyc-panel-step-section ${results.liveness ? "ekyc-panel-step-section--done" : ""}`}>
           <div className="ekyc-panel-step-header">
             <span className="ekyc-panel-step-num">2</span>
-            <h4 className="ekyc-panel-step-title">Liveness – Xác minh người thật</h4>
+            <h4 className="ekyc-panel-step-title">{t.livenessTitle}</h4>
             {results.liveness && (
               <span className={`ekyc-panel-step-badge ${results.liveness.is_live ? "ekyc-panel-step-badge--pass" : "ekyc-panel-step-badge--fail"}`}>
                 {results.liveness.is_live ? "✓" : "✗"}
@@ -333,14 +337,14 @@ export function EkycActionPanel({ remoteVideoRef, onOcrComplete, onLivenessCompl
           {!results.liveness && (
             <div className="ekyc-panel-captures">
               <div className="ekyc-panel-capture-item">
-                <span className="ekyc-panel-capture-label">Khuôn mặt</span>
+                <span className="ekyc-panel-capture-label">{t.face}</span>
                 {images.selfieUrl ? (
                   <div className="ekyc-panel-thumb-wrap">
                     <img src={images.selfieUrl} alt="Selfie" className="ekyc-panel-thumb" />
-                    <button className="ekyc-panel-recapture-btn" onClick={() => setImages((prev) => { if (prev.selfieUrl) URL.revokeObjectURL(prev.selfieUrl); return { ...prev, selfie: undefined, selfieUrl: undefined }; })} title="Xoá ảnh">✕</button>
+                    <button className="ekyc-panel-recapture-btn" onClick={() => setImages((prev) => { if (prev.selfieUrl) URL.revokeObjectURL(prev.selfieUrl); return { ...prev, selfie: undefined, selfieUrl: undefined }; })} title={t.clearImage}>✕</button>
                   </div>
                 ) : (
-                  <CaptureButton onClick={handleCaptureSelfie} label="Chụp" />
+                  <CaptureButton onClick={handleCaptureSelfie} label={t.captureBtn} />
                 )}
               </div>
             </div>
@@ -349,7 +353,7 @@ export function EkycActionPanel({ remoteVideoRef, onOcrComplete, onLivenessCompl
           {/* Call Liveness button */}
           {images.selfie && !results.liveness && (
             <button className="ekyc-panel-action-btn" onClick={handleLiveness} disabled={processing === "liveness"}>
-              {processing === "liveness" ? <><span className="ekyc-panel-spinner" /> Đang xử lý...</> : "Gửi Liveness"}
+              {processing === "liveness" ? <><span className="ekyc-panel-spinner" /> {t.processing}</> : t.sendLiveness}
             </button>
           )}
 
@@ -357,7 +361,7 @@ export function EkycActionPanel({ remoteVideoRef, onOcrComplete, onLivenessCompl
           {errors.liveness && <div className="ekyc-panel-error-msg">⚠️ {errors.liveness}</div>}
 
           {/* Liveness Result */}
-          {results.liveness && <LivenessResultDisplay data={results.liveness} />}
+          {results.liveness && <LivenessResultDisplay data={results.liveness} t={t} />}
         </div>
 
         {/* ═══════════════════════════════════════════════════
@@ -366,7 +370,7 @@ export function EkycActionPanel({ remoteVideoRef, onOcrComplete, onLivenessCompl
         <div className={`ekyc-panel-step-section ${results.faceMatch ? "ekyc-panel-step-section--done" : ""}`}>
           <div className="ekyc-panel-step-header">
             <span className="ekyc-panel-step-num">3</span>
-            <h4 className="ekyc-panel-step-title">Face Match – So khớp khuôn mặt</h4>
+            <h4 className="ekyc-panel-step-title">{t.faceMatchTitle}</h4>
             {results.faceMatch && (
               <span className={`ekyc-panel-step-badge ${results.faceMatch.match ? "ekyc-panel-step-badge--pass" : "ekyc-panel-step-badge--fail"}`}>
                 {results.faceMatch.match ? "✓" : "✗"}
@@ -374,12 +378,12 @@ export function EkycActionPanel({ remoteVideoRef, onOcrComplete, onLivenessCompl
             )}
           </div>
 
-          <p className="ekyc-panel-desc">So sánh khuôn mặt với ảnh trên giấy tờ</p>
+          <p className="ekyc-panel-desc">{t.faceMatchDesc}</p>
 
           {/* Call Face Match button */}
           {canCallFaceMatch && (
             <button className="ekyc-panel-action-btn" onClick={handleFaceMatch} disabled={processing === "faceMatch"}>
-              {processing === "faceMatch" ? <><span className="ekyc-panel-spinner" /> Đang xử lý...</> : "Gửi Face Match"}
+              {processing === "faceMatch" ? <><span className="ekyc-panel-spinner" /> {t.processing}</> : t.sendFaceMatch}
             </button>
           )}
 
@@ -387,7 +391,7 @@ export function EkycActionPanel({ remoteVideoRef, onOcrComplete, onLivenessCompl
           {errors.faceMatch && <div className="ekyc-panel-error-msg">⚠️ {errors.faceMatch}</div>}
 
           {/* Face Match Result */}
-          {results.faceMatch && <FaceMatchResultDisplay data={results.faceMatch} />}
+          {results.faceMatch && <FaceMatchResultDisplay data={results.faceMatch} t={t} />}
         </div>
       </div>
     </div>
@@ -408,59 +412,59 @@ function CaptureButton({ onClick, label }: { onClick: () => void; label: string 
   );
 }
 
-function OcrResultDisplay({ data }: { data: OcrResponse }) {
+function OcrResultDisplay({ data, t }: { data: OcrResponse; t: EkycPanelLocale }) {
   return (
     <div className="ekyc-panel-result-table">
-      <ResultRow label="Trạng thái" value={data.success ? "✓ Thành công" : "✗ Thất bại"} pass={data.success} />
-      <ResultRow label="Loại giấy tờ" value={data.document_type} />
-      <ResultRow label="Độ tin cậy" value={`${(data.confidence * 100).toFixed(1)}%`} />
+      <ResultRow label={t.ocrStatus} value={data.success ? t.ocrSuccess : t.ocrFailed} pass={data.success} />
+      <ResultRow label={t.docType} value={data.document_type} />
+      <ResultRow label={t.confidence} value={`${(data.confidence * 100).toFixed(1)}%`} />
       {data.data && (
         <>
-          <ResultRow label="Họ tên" value={data.data.full_name} highlight />
-          <ResultRow label="Số CMND/CCCD" value={data.data.id_number} />
-          <ResultRow label="Ngày sinh" value={data.data.date_of_birth} />
-          <ResultRow label="Giới tính" value={data.data.gender} />
-          <ResultRow label="Quốc tịch" value={data.data.nationality} />
-          <ResultRow label="Quê quán" value={data.data.place_of_origin} />
-          <ResultRow label="Nơi thường trú" value={data.data.place_of_residence} />
-          <ResultRow label="Ngày hết hạn" value={data.data.expiry_date} />
-          {data.data.issue_date && <ResultRow label="Ngày cấp" value={data.data.issue_date} />}
+          <ResultRow label={t.fullName} value={data.data.full_name} highlight />
+          <ResultRow label={t.idNumber} value={data.data.id_number} />
+          <ResultRow label={t.dateOfBirth} value={data.data.date_of_birth} />
+          <ResultRow label={t.gender} value={data.data.gender} />
+          <ResultRow label={t.nationality} value={data.data.nationality} />
+          <ResultRow label={t.placeOfOrigin} value={data.data.place_of_origin} />
+          <ResultRow label={t.placeOfResidence} value={data.data.place_of_residence} />
+          <ResultRow label={t.expiryDate} value={data.data.expiry_date} />
+          {data.data.issue_date && <ResultRow label={t.issueDate} value={data.data.issue_date} />}
         </>
       )}
-      <ResultRow label="Thời gian xử lý" value={`${data.processing_time_ms}ms`} />
+      <ResultRow label={t.processingTime} value={`${data.processing_time_ms}ms`} />
     </div>
   );
 }
 
-function LivenessResultDisplay({ data }: { data: LivenessResponse }) {
+function LivenessResultDisplay({ data, t }: { data: LivenessResponse; t: EkycPanelLocale }) {
   return (
     <div className="ekyc-panel-result-table">
-      <ResultRow label="Người thật" value={data.is_live ? "✓ Có" : "✗ Không"} pass={data.is_live} />
-      <ResultRow label="Độ tin cậy" value={`${(data.confidence * 100).toFixed(1)}%`} />
-      <ResultRow label="Giả mạo" value={data.spoofing_detected ? `✗ ${data.spoofing_type}` : "✓ Không"} pass={!data.spoofing_detected} />
+      <ResultRow label={t.isLive} value={data.is_live ? t.liveYes : t.liveNo} pass={data.is_live} />
+      <ResultRow label={t.confidence} value={`${(data.confidence * 100).toFixed(1)}%`} />
+      <ResultRow label={t.spoofing} value={data.spoofing_detected ? `✗ ${data.spoofing_type}` : t.spoofingNone} pass={!data.spoofing_detected} />
       {data.checks && (
         <>
           <ResultRow label="Texture" value={data.checks.texture_analysis.passed ? "✓" : "✗"} pass={data.checks.texture_analysis.passed} />
           <ResultRow label="Moiré" value={data.checks.moire_detection.passed ? "✓" : "✗"} pass={data.checks.moire_detection.passed} />
-          <ResultRow label="Phản chiếu" value={data.checks.reflection_detection.passed ? "✓" : "✗"} pass={data.checks.reflection_detection.passed} />
+          <ResultRow label="Reflection" value={data.checks.reflection_detection.passed ? "✓" : "✗"} pass={data.checks.reflection_detection.passed} />
           <ResultRow label="Depth" value={data.checks.depth_estimation.passed ? "✓" : "✗"} pass={data.checks.depth_estimation.passed} />
           <ResultRow label="CLIP" value={`${(data.checks.clip_liveness.liveness_score * 100).toFixed(1)}%`} pass={data.checks.clip_liveness.passed} />
         </>
       )}
-      <ResultRow label="Thời gian xử lý" value={`${data.processing_time_ms}ms`} />
+      <ResultRow label={t.processingTime} value={`${data.processing_time_ms}ms`} />
     </div>
   );
 }
 
-function FaceMatchResultDisplay({ data }: { data: FaceMatchResponse }) {
+function FaceMatchResultDisplay({ data, t }: { data: FaceMatchResponse; t: EkycPanelLocale }) {
   return (
     <div className="ekyc-panel-result-table">
-      <ResultRow label="Khớp" value={data.match ? "✓ Có" : "✗ Không"} pass={data.match} />
-      <ResultRow label="Độ tương đồng" value={`${(data.similarity * 100).toFixed(1)}%`} />
-      <ResultRow label="Ngưỡng" value={`${(data.threshold * 100).toFixed(1)}%`} />
-      <ResultRow label="Phát hiện khuôn mặt (selfie)" value={data.selfie_face_detected ? "✓" : "✗"} pass={data.selfie_face_detected} />
-      <ResultRow label="Phát hiện khuôn mặt (giấy tờ)" value={data.document_face_detected ? "✓" : "✗"} pass={data.document_face_detected} />
-      <ResultRow label="Thời gian xử lý" value={`${data.processing_time_ms}ms`} />
+      <ResultRow label={t.matchLabel} value={data.match ? t.matchYes : t.matchNo} pass={data.match} />
+      <ResultRow label={t.similarity} value={`${(data.similarity * 100).toFixed(1)}%`} />
+      <ResultRow label={t.threshold} value={`${(data.threshold * 100).toFixed(1)}%`} />
+      <ResultRow label={t.selfieFaceDetected} value={data.selfie_face_detected ? "✓" : "✗"} pass={data.selfie_face_detected} />
+      <ResultRow label={t.documentFaceDetected} value={data.document_face_detected ? "✓" : "✗"} pass={data.document_face_detected} />
+      <ResultRow label={t.processingTime} value={`${data.processing_time_ms}ms`} />
     </div>
   );
 }

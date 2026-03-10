@@ -1,7 +1,7 @@
 import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
 import type { JoinWithCodeResponse } from "../types/meeting.types";
 import { ErmisService } from "ermis-ekyc-sdk";
-import { useEkycMeetingConfig } from "../EkycMeetingProvider";
+import { useEkycMeetingConfig, useEkycLocale } from "../EkycMeetingProvider";
 import "./EkycMeetingRoom.css";
 import { ChannelName, ErmisClassroomProvider, useErmisClassroom, useMediaDevices } from "@ermisnetwork/ermis-classroom-react";
 import { QualityLevel } from "@ermisnetwork/ermis-classroom-sdk";
@@ -24,15 +24,6 @@ export interface EkycMeetingRoomProps {
 
   /** Show the bottom control bar (mic, camera, share, leave). @default true */
   showControls?: boolean;
-
-  // ── Custom labels ────────────────────────────────────────
-
-  /** Custom leave button text. @default "Rời phòng" */
-  leaveButtonLabel?: string;
-  /** Custom host participant label. @default "Thẩm định viên (HOST)" */
-  hostLabel?: string;
-  /** Custom guest participant label. @default "Khách hàng (GUEST)" */
-  guestLabel?: string;
 }
 
 /** Ref handle exposed by EkycMeetingRoom for external access */
@@ -85,10 +76,11 @@ const EkycMeetingRoomInner = forwardRef<EkycMeetingRoomRef, EkycMeetingRoomProps
   meetingData,
   onLeave,
   showControls = true,
-  leaveButtonLabel = "Rời phòng",
-  hostLabel = "Thẩm định viên (HOST)",
-  guestLabel = "Khách hàng (GUEST)",
 }, ref) {
+  const locale = useEkycLocale();
+  const leaveButtonLabel = locale.room.leaveButton;
+  const hostLabel = locale.room.hostLabel;
+  const guestLabel = locale.room.guestLabel;
   const {
     client,
     authenticate,
@@ -199,7 +191,7 @@ const EkycMeetingRoomInner = forwardRef<EkycMeetingRoomRef, EkycMeetingRoomProps
     <>
       {/* ── Status indicator ──────────────────────────────── */}
       {roomStatus === "connecting" && (
-        <div className="ekyc-room-status">Đang kết nối phòng họp...</div>
+        <div className="ekyc-room-status">{locale.room.connecting}</div>
       )}
       {roomStatus === "error" && roomError && (
         <div className="ekyc-room-error">⚠️ {roomError}</div>
@@ -219,7 +211,7 @@ const EkycMeetingRoomInner = forwardRef<EkycMeetingRoomRef, EkycMeetingRoomProps
                 {!videoEnabled && <CameraOffOverlay />}
                 {!micEnabled && <MicStatusBadge />}
                 <span className="ekyc-room-tile-label">
-                  {isHost ? hostLabel : guestLabel} (B{'\u1ea1'}n)
+                  {isHost ? hostLabel : guestLabel} ({locale.room.you})
                 </span>
               </div>
             );

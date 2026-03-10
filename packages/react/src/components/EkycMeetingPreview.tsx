@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { ErmisService } from "ermis-ekyc-sdk";
 import { useMediaPreview } from "../hooks/useMediaPreview";
-import { useEkycMeetingConfig } from "../EkycMeetingProvider";
+import { useEkycMeetingConfig, useEkycLocale } from "../EkycMeetingProvider";
 import type { JoinWithCodeResponse } from "../types/meeting.types";
 import "./EkycMeetingPreview.css";
 
@@ -80,13 +80,20 @@ export function EkycMeetingPreview({
   showToggleButtons = true,
   showDeviceSelectors = true,
   showAudioLevel = true,
-  headerTitle = "Kiểm tra thiết bị",
-  headerDescription = "Kiểm tra camera và micro trước khi tham gia phiên thẩm định",
-  joinButtonLabel = "Tham gia phiên thẩm định",
-  joiningLabel = "Đang kết nối...",
+  headerTitle,
+  headerDescription,
+  joinButtonLabel,
+  joiningLabel,
 }: EkycMeetingPreviewProps) {
   const meetingService = ErmisService.getInstance().meetings;
   const { meetingHostUrl, meetingNodeUrl } = useEkycMeetingConfig();
+  const locale = useEkycLocale();
+
+  // Use prop overrides or locale defaults
+  const _title = headerTitle ?? locale.preview.title;
+  const _desc = headerDescription ?? locale.preview.description;
+  const _joinBtn = joinButtonLabel ?? locale.preview.joinButton;
+  const _joiningLbl = joiningLabel ?? locale.preview.joining;
 
   const {
     stream,
@@ -186,8 +193,8 @@ export function EkycMeetingPreview({
       {/* ── Header ──────────────────────────────────────────── */}
       {showHeader && (
         <div className="ekyc-preview-header">
-          <h2 className="ekyc-preview-title">{headerTitle}</h2>
-          <p className="ekyc-preview-desc">{headerDescription}</p>
+          <h2 className="ekyc-preview-title">{_title}</h2>
+          <p className="ekyc-preview-desc">{_desc}</p>
         </div>
       )}
 
@@ -277,7 +284,7 @@ export function EkycMeetingPreview({
         disabled={!canJoin}
         className="ekyc-preview-join-btn"
       >
-        {isJoining ? joiningLabel : joinButtonLabel}
+        {isJoining ? _joiningLbl : _joinBtn}
       </button>
     </div>
   );
