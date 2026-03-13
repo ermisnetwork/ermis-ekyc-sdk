@@ -3,8 +3,8 @@ import type { JoinWithCodeResponse } from "../types/meeting.types";
 import { ErmisService } from "ermis-ekyc-sdk";
 import { useEkycMeetingConfig, useEkycLocale } from "../EkycMeetingProvider";
 import "./EkycMeetingRoom.css";
-import { ChannelName, ErmisClassroomProvider, useErmisClassroom, useMediaDevices } from "@ermisnetwork/ermis-classroom-react";
-import { QualityLevel } from "@ermisnetwork/ermis-classroom-sdk";
+import { ChannelName, ErmisClassroomProvider, useErmisClassroom, useMediaDevices } from "@ermis-network/ermis-classroom-react";
+import { QualityLevel } from "@ermis-network/ermis-classroom-sdk";
 
 // ============================================================
 // EkycMeetingRoom – Meeting room UI with live video streams

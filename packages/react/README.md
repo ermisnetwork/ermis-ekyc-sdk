@@ -13,7 +13,7 @@ npm install ermis-ekyc-react ermis-ekyc-sdk
 The package requires static files (WASM workers, polyfills) for the video meeting engine. There are 2 ways to set them up:
 
 **Automatic (postinstall):**
-When installing `ermis-ekyc-react`, the `postinstall` script automatically copies 4 folders (`opus_decoder`, `polyfills`, `raptorQ`, `workers`) into your project's `public/` directory.
+When installing `ermis-ekyc-react`, the `postinstall` script automatically copies 5 folders (`codec-polyfill`, `opus_decoder`, `polyfills`, `raptorQ`, `workers`) into your project's `public/` directory.
 
 **Manual (if postinstall is skipped):**
 

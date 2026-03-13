@@ -13,8 +13,8 @@ import {
 const DEFAULT_ERMIS_API = "https://api-ekyc.ermis.network";
 const DEFAULT_EKYC_API = "https://ekyc-api.ktssolution.com/api/ekyc";
 const DEFAULT_EKYC_API_KEY = "dev-key-123";
-const DEFAULT_MEETING_HOST = "https://ubuntu-server.trungdt.xyz:9937";
-const DEFAULT_MEETING_NODE = "https://ubuntu-server.trungdt.xyz:9900";
+const DEFAULT_MEETING_HOST = "https://meeting-dev.ermis.network:9900";
+const DEFAULT_MEETING_NODE = "https://meeting-dev.ermis.network:8800";
 
 type View = "input" | "preview" | "room";
 

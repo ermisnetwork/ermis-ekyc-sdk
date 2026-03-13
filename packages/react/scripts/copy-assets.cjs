@@ -3,7 +3,7 @@
 /**
  * ermis-ekyc-setup
  *
- * Copies required meeting static assets (opus_decoder, polyfills, raptorQ, workers)
+ * Copies required meeting static assets (codec-polyfill, opus_decoder, polyfills, raptorQ, workers)
  * from the ermis-ekyc-react package into the consumer project's public/ folder.
  *
  * Usage:
@@ -14,7 +14,13 @@
 const fs = require("fs");
 const path = require("path");
 
-const ASSET_DIRS = ["opus_decoder", "polyfills", "raptorQ", "workers"];
+const ASSET_DIRS = [
+  "codec-polyfill",
+  "opus_decoder",
+  "polyfills",
+  "raptorQ",
+  "workers",
+];
 
 // ── Find the consumer project root ──────────────────────────
 function findProjectRoot() {
