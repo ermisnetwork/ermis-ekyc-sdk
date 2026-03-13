@@ -1,0 +1,72 @@
+/**
+ * Custom theme for Ermis eKYC SDK docs.
+ * Purple-blue palette matching the favicon.
+ */
+
+/* Light mode */
+:root {
+  --ifm-color-primary: #6c3ce0;
+  --ifm-color-primary-dark: #5c2ed0;
+  --ifm-color-primary-darker: #5628c5;
+  --ifm-color-primary-darkest: #4720a2;
+  --ifm-color-primary-light: #7c4ee8;
+  --ifm-color-primary-lighter: #8558ea;
+  --ifm-color-primary-lightest: #a07ef0;
+  --ifm-code-font-size: 95%;
+  --ifm-font-family-base:
+    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, sans-serif;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+}
+
+/* Dark mode */
+[data-theme="dark"] {
+  --ifm-color-primary: #a07ef0;
+  --ifm-color-primary-dark: #8b60ec;
+  --ifm-color-primary-darker: #8050ea;
+  --ifm-color-primary-darkest: #5c24e2;
+  --ifm-color-primary-light: #b59cf4;
+  --ifm-color-primary-lighter: #c0aaf6;
+  --ifm-color-primary-lightest: #ddd0fa;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
+
+/* Hero section — purple-blue gradient matching favicon */
+.hero--primary {
+  background: linear-gradient(135deg, #5046e5 0%, #7c3aed 50%, #9333ea 100%);
+}
+
+[data-theme="dark"] .hero--primary {
+  background: linear-gradient(135deg, #312e81 0%, #4c1d95 50%, #581c87 100%);
+}
+
+/* Better code blocks */
+.prism-code {
+  border-radius: 8px;
+}
+
+/* Admonition styling */
+.alert {
+  border-radius: 8px;
+}
+
+/* Table styling */
+table th {
+  background-color: var(--ifm-background-surface-color);
+}
+
+/* Navbar */
+.navbar {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+/* Sidebar */
+.menu__link {
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+/* Footer */
+.footer {
+  border-top: 1px solid var(--ifm-toc-border-color);
+}

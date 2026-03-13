@@ -29,7 +29,9 @@
     "build:react": "cd packages/react && npm run build",
     "build:all": "npm run build && npm run build:react",
     "demo:install": "npm run build && cd examples/demo && npm install",
-    "demo": "npm run build && npm run build:react && concurrently -n sdk,react,demo -c blue,magenta,green \"tsc --watch --preserveWatchOutput\" \"cd packages/react && tsup --watch\" \"cd examples/demo && npm run dev\""
+    "demo": "npm run build && npm run build:react && concurrently -n sdk,react,demo -c blue,magenta,green \"tsc --watch --preserveWatchOutput\" \"cd packages/react && tsup --watch\" \"cd examples/demo && npm run dev\"",
+    "docs:dev": "cd docs && npm start",
+    "docs:build": "cd docs && npm run build"
   },
   "keywords": [
     "ekyc",
