@@ -1,6 +1,6 @@
 {
   "name": "ermis-ekyc-react",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Ermis eKYC React UI SDK – Meeting Preview & Room components",
   "type": "module",
   "main": "dist/index.js",
@@ -31,6 +31,8 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "lint": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "postinstall": "node scripts/copy-assets.cjs"
   },
   "peerDependencies": {
@@ -39,19 +41,21 @@
     "react-dom": "^18.0.0"
   },
   "dependencies": {
-    "@ermis-network/ermis-classroom-sdk": "^2.3.34",
-    "@ermis-network/ermis-classroom-react": "^2.3.34"
+    "@ermis-network/ermis-classroom-react": "^2.3.34",
+    "@ermis-network/ermis-classroom-sdk": "^2.3.34"
   },
   "devDependencies": {
+    "@ermis-network/ermis-classroom-react": "^2.3.34",
+    "@ermis-network/ermis-classroom-sdk": "^2.3.34",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "ermis-ekyc-sdk": "file:../../",
+    "jsdom": "^28.1.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "@ermis-network/ermis-classroom-sdk": "^2.3.34",
-    "@ermis-network/ermis-classroom-react": "^2.3.34",
     "tsup": "^8.0.0",
-    "typescript": "^5.3.0"
+    "typescript": "^5.3.0",
+    "vitest": "^3.2.4"
   },
   "keywords": [
     "ermis",

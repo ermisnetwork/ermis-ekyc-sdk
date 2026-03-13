@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18, 20]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+
+      - name: Install core SDK dependencies
+        run: npm ci
+
+      - name: Lint core SDK
+        run: npm run lint
+
+      - name: Test core SDK
+        run: npm test
+
+      - name: Build core SDK
+        run: npm run build
+
+      - name: Install React SDK dependencies
+        run: |
+          cd packages/react
+          npm install
+
+      - name: Test React SDK
+        run: |
+          cd packages/react
+          npm test
+
+      - name: Build React SDK
+        run: npm run build:react
