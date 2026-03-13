@@ -6,7 +6,6 @@ import { ResultPanel } from "./ResultPanel";
 const DOC_TYPE_LABELS: Record<DocumentType, string> = {
   [DocumentType.CCCD]: "CCCD – Citizen Identity Card",
   [DocumentType.PASSPORT]: "Passport",
-  [DocumentType.GPLX]: "GPLX – Driver's License",
 };
 
 interface OcrTestProps {

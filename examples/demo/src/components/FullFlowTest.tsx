@@ -17,7 +17,6 @@ const stepStyles: Record<StepStatus, string> = {
 const DOC_TYPE_LABELS: Record<DocumentType, string> = {
   [DocumentType.CCCD]: "CCCD – Citizen Identity Card",
   [DocumentType.PASSPORT]: "Passport",
-  [DocumentType.GPLX]: "GPLX – Driver's License",
 };
 
 export function FullFlowTest() {

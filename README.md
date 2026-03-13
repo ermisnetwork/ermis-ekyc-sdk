@@ -17,7 +17,7 @@ A TypeScript SDK for identity verification (eKYC) with **two modules**:
 
 ### eKYC Module (`EkycService`)
 
-- 📄 **OCR** – Extract information from identity documents (CCCD, Passport, Driver's License)
+- 📄 **OCR** – Extract information from identity documents (CCCD, Passport)
 - 🧬 **Liveness Detection** – Verify a selfie is from a live person (anti-spoofing)
 - 🔍 **Face Match** – Compare a selfie with a document photo
 - 🚀 **Full Flow** – Orchestrate all 3 steps in a single call
@@ -335,7 +335,7 @@ const ekyc = EkycService.getInstance({
 ```typescript
 interface OcrRequest {
   documentFront: Blob | File | string; // Front side (required)
-  documentBack?: Blob | File | string; // Back side (required for CCCD/GPLX)
+  documentBack?: Blob | File | string; // Back side (required for CCCD)
   documentType?: DocumentType | string; // Default: "CCCD"
   extractFace?: boolean; // Default: true
   ocrApi?: string; // Default: "advanced"
@@ -344,7 +344,6 @@ interface OcrRequest {
 enum DocumentType {
   CCCD = "CCCD", // Citizen Identity Card
   PASSPORT = "PASSPORT", // Passport
-  GPLX = "GPLX", // Driver's License
 }
 ```
 

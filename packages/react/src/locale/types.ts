@@ -39,7 +39,6 @@ export interface EkycPanelLocale {
   // Document types
   docCccd: string;
   docPassport: string;
-  docGplx: string;
 
   // Capture
   frontSide: string;

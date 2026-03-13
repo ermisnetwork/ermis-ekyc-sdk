@@ -24,25 +24,25 @@ const ekyc = EkycService.getInstance({
 
 ## OCR – Document Extraction
 
-Extract information from identity documents (CCCD, Passport, Driver's License).
+Extract information from identity documents (CCCD, Passport).
 
 ```typescript
 const result = await ekyc.performOcr({
   documentFront: frontImageFile, // Blob | File | base64 string
   documentBack: backImageFile, // optional for Passport
-  documentType: DocumentType.CCCD, // CCCD | PASSPORT | GPLX
+  documentType: DocumentType.CCCD, // CCCD | PASSPORT
   extractFace: true, // optional, default: true
 });
 ```
 
 ### OcrRequest
 
-| Field           | Type                     | Required | Description                        |
-| --------------- | ------------------------ | -------- | ---------------------------------- |
-| `documentFront` | `Blob \| File \| string` | ✅       | Front side of the document         |
-| `documentBack`  | `Blob \| File \| string` | ❌       | Back side (required for CCCD/GPLX) |
-| `documentType`  | `DocumentType \| string` | ❌       | Default: `"CCCD"`                  |
-| `extractFace`   | `boolean`                | ❌       | Default: `true`                    |
+| Field           | Type                     | Required | Description                   |
+| --------------- | ------------------------ | -------- | ----------------------------- |
+| `documentFront` | `Blob \| File \| string` | ✅       | Front side of the document    |
+| `documentBack`  | `Blob \| File \| string` | ❌       | Back side (required for CCCD) |
+| `documentType`  | `DocumentType \| string` | ❌       | Default: `"CCCD"`             |
+| `extractFace`   | `boolean`                | ❌       | Default: `true`               |
 
 ### OcrResponse
 
@@ -64,7 +64,6 @@ const result = await ekyc.performOcr({
 enum DocumentType {
   CCCD = "CCCD", // Citizen Identity Card (Vietnam)
   PASSPORT = "PASSPORT", // Passport
-  GPLX = "GPLX", // Driver's License
 }
 ```
 

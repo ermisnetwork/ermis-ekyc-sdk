@@ -254,7 +254,6 @@ export function EkycActionPanel({ remoteVideoRef, onOcrComplete, onLivenessCompl
             {([
               [DocumentType.CCCD, t.docCccd],
               [DocumentType.PASSPORT, t.docPassport],
-              [DocumentType.GPLX, t.docGplx],
             ] as [DocumentType, string][]).map(([type, label]) => (
               <button
                 key={type}

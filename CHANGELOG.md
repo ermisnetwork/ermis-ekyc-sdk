@@ -32,7 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- OCR document extraction (CCCD, Passport, GPLX)
+- OCR document extraction (CCCD, Passport)
 - Liveness detection with passive mode and anti-spoofing checks
 - Face match comparison with configurable threshold
 - Full eKYC flow orchestration (OCR → Liveness → Face Match)

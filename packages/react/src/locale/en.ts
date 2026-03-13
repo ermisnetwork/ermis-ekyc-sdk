@@ -29,7 +29,6 @@ export const enLocale: EkycLocale = {
 
     docCccd: "National ID",
     docPassport: "Passport",
-    docGplx: "Driver License",
 
     frontSide: "Front side",
     backSide: "Back side",

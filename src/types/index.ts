@@ -23,15 +23,13 @@ export enum DocumentType {
   CCCD = "CCCD",
   /** Passport */
   PASSPORT = "PASSPORT",
-  /** Driver's License */
-  GPLX = "GPLX",
 }
 
 export interface OcrRequest {
   /** Front side of the document (Blob, File, or base64 string) */
   documentFront: Blob | File | string;
 
-  /** Back side of the document (Blob, File, or base64 string). Required for CCCD/GPLX, not needed for PASSPORT. */
+  /** Back side of the document (Blob, File, or base64 string). Required for CCCD, not needed for PASSPORT. */
   documentBack?: Blob | File | string;
 
   /** Document type, defaults to DocumentType.CCCD */

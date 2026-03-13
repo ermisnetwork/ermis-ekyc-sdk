@@ -35,7 +35,7 @@ function HostView({ joinData }) {
 
 ### Step 1: OCR – Identity Document
 
-1. Select document type (CCCD / Passport / GPLX)
+1. Select document type (CCCD / Passport)
 2. Capture front side of the document
 3. Capture back side (optional for Passport)
 4. Click "Send OCR"

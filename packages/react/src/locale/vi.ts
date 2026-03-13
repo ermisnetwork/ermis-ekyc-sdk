@@ -29,7 +29,6 @@ export const viLocale: EkycLocale = {
 
     docCccd: "CCCD",
     docPassport: "Hộ chiếu",
-    docGplx: "GPLX",
 
     frontSide: "Mặt trước",
     backSide: "Mặt sau",
