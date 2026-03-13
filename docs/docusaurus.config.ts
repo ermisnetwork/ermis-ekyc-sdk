@@ -106,6 +106,11 @@ const config: Config = {
           label: "Documentation",
         },
         {
+          href: "https://ermisnetwork.github.io/ermis-ekyc-sdk/demo/",
+          label: "Live Demo",
+          position: "left",
+        },
+        {
           href: "https://github.com/ermisnetwork/ermis-ekyc-sdk",
           label: "GitHub",
           position: "right",

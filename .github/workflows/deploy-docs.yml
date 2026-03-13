@@ -1,10 +1,13 @@
-name: Deploy Docs
+name: Deploy Docs & Demo
 
 on:
   push:
     branches: [main]
     paths:
       - "docs/**"
+      - "examples/demo/**"
+      - "packages/**"
+      - "src/**"
 
   workflow_dispatch:
 
@@ -31,7 +34,8 @@ jobs:
           cache: npm
           cache-dependency-path: docs/package-lock.json
 
-      - name: Install dependencies
+      # ── Build Docs ────────────────────────────────────────
+      - name: Install docs dependencies
         run: |
           cd docs
           npm ci
@@ -40,6 +44,41 @@ jobs:
         run: |
           cd docs
           npm run build
+
+      # ── Build Core SDK ────────────────────────────────────
+      - name: Install core SDK dependencies
+        run: npm ci
+
+      - name: Build core SDK
+        run: npm run build
+
+      # ── Build React SDK ───────────────────────────────────
+      - name: Install React SDK dependencies
+        run: |
+          cd packages/react
+          rm -f package-lock.json
+          npm install --ignore-scripts
+
+      - name: Build React SDK
+        run: npm run build:react
+
+      # ── Build Demo ────────────────────────────────────────
+      - name: Install demo dependencies
+        run: |
+          cd examples/demo
+          rm -f package-lock.json
+          npm install --ignore-scripts
+
+      - name: Build demo
+        run: |
+          cd examples/demo
+          npm run build
+
+      # ── Combine & Upload ──────────────────────────────────
+      - name: Copy demo build into docs output
+        run: |
+          mkdir -p docs/build/demo
+          cp -r examples/demo/dist/* docs/build/demo/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
