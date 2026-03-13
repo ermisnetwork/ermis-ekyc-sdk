@@ -1,6 +1,6 @@
 {
   "name": "ermis-ekyc-sdk",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Ermis eKYC SDK - OCR, Liveness Detection, Face Match",
   "type": "module",
   "main": "dist/index.js",
