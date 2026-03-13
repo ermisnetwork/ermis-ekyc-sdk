@@ -30,7 +30,7 @@ function HomepageHeader() {
 const features = [
   {
     title: '📄 OCR',
-    description: 'Extract information from identity documents – CCCD, Passport, Driver\'s License.',
+    description: 'Extract information from identity documents – CCCD, Passport.',
   },
   {
     title: '🧬 Liveness Detection',
