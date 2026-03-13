@@ -39,7 +39,8 @@ jobs:
       - name: Install React SDK dependencies
         run: |
           cd packages/react
-          npm install
+          rm -f package-lock.json
+          npm install --ignore-scripts
 
       - name: Test React SDK
         run: |
