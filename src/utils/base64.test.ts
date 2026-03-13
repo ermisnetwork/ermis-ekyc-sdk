@@ -95,6 +95,7 @@ describe("ensureBlob", () => {
   });
 
   it("should return File as-is (File extends Blob)", () => {
+    if (typeof File === "undefined") return; // File not available in Node
     const file = new File(["test"], "test.txt", { type: "text/plain" });
     const result = ensureBlob(file);
     expect(result).toBe(file);
